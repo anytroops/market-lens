@@ -1,5 +1,17 @@
 # Worklog
 
+## 2026-07-10: Phase 1 sign-off decisions (Sean delegated, Claude chose)
+
+- Kalshi window: accept the API-retained window (usable from May 2026).
+  Cross-platform matching, divergence, and backtest therefore live in
+  roughly May to July 2026. Kalshi calibration is reported as a
+  short-window study beside Polymarket's 24 months, never pooled silently.
+- Polymarket volume floor stays at $1,000; price sample stays at 15,000
+  per platform. All three knobs are one-line config changes if revisited.
+- Phase 4 option kept open: extend matched-pair price histories (not
+  calibration) backward using Kalshi's S3 daily files, since outcomes for
+  matched pairs come from the Polymarket leg.
+
 ## 2026-07-10: Phase 1 ingestion run complete
 
 Numbers (full details and anomaly write-ups in reports/data_quality.md):
