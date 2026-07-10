@@ -71,13 +71,17 @@ def run_matching(conn: sqlite3.Connection, since: str, until: str,
         for mid, title, close_ts, cat, vol, raw in conn.execute(
                 """SELECT market_id, title, close_ts, category, volume, raw_json
                    FROM markets WHERE platform = ?""", (platform,)):
-            sub = ""
-            if platform == "kalshi":
-                try:
-                    sub = str(_json.loads(raw).get("yes_sub_title") or "")
-                except (TypeError, ValueError):
-                    pass
-            meta[(platform, mid)] = (title, close_ts, cat, vol, sub)
+            sub, url = "", ""
+            try:
+                parsed = _json.loads(raw)
+                if platform == "kalshi":
+                    sub = str(parsed.get("yes_sub_title") or "")
+                else:
+                    slug = parsed.get("slug")
+                    url = f"https://polymarket.com/market/{slug}" if slug else ""
+            except (TypeError, ValueError):
+                pass
+            meta[(platform, mid)] = (title, close_ts, cat, vol, sub, url)
 
     csv_path.parent.mkdir(parents=True, exist_ok=True)
     with open(csv_path, "w", newline="") as f:
@@ -85,7 +89,8 @@ def run_matching(conn: sqlite3.Connection, since: str, until: str,
         w.writerow([
             "score", "pm_id", "pm_title", "pm_close", "pm_category", "pm_volume",
             "kalshi_id", "kalshi_title", "kalshi_subtitle", "kalshi_close",
-            "kalshi_category", "kalshi_volume", "both_have_prices", "verified",
+            "kalshi_category", "kalshi_volume", "both_have_prices", "pm_url",
+            "verified",
         ])
         for c in candidates:
             pm_meta = meta[("polymarket", c.polymarket_id)]
@@ -95,7 +100,7 @@ def run_matching(conn: sqlite3.Connection, since: str, until: str,
             w.writerow([
                 f"{c.score:.1f}", c.polymarket_id, pm_meta[0], pm_meta[1],
                 pm_meta[2], pm_meta[3], c.kalshi_id, k_meta[0], k_meta[4],
-                k_meta[1], k_meta[2], k_meta[3], int(both_priced), "",
+                k_meta[1], k_meta[2], k_meta[3], int(both_priced), pm_meta[5], "",
             ])
 
     n_priced = sum(
