@@ -1,6 +1,29 @@
 # Worklog
 
-## 2026-07-09: Phase 1, ingestion pipeline built (run results appended below when complete)
+## 2026-07-10: Phase 1 ingestion run complete
+
+Numbers (full details and anomaly write-ups in reports/data_quality.md):
+- Polymarket: 358,957 markets ingested, 344,556 headline (resolved binary,
+  24h+ lifetime), coverage July 2024 to July 2026 with an upstream Gamma
+  hole March 5 to 26, 2026 (verified live).
+- Kalshi: 587,721 markets ingested, 235,702 headline, but usable coverage
+  is effectively May 2026 onward: the API purges older settled markets and
+  pre-May metadata has empty result fields. 337,584 resolved markets were
+  excluded as sub-24h, validating Sean's inclusion rule.
+- Prices: 15,000 markets sampled per platform (seed 42); 14,598 Polymarket
+  histories (201,122 daily rows) and 14,977 Kalshi (105,759 rows, with
+  historical bid/ask). A second upstream Polymarket hole: 402 sampled
+  markets, mostly April 2026 and high volume, return empty price history
+  from the CLOB endpoint (verified live).
+- Storage: 3.6 GB SQLite plus 449 MB gzipped raw archive. Re-runs are
+  idempotent and cache-backed (verified: zero network calls, zero row
+  changes on identical re-run).
+- Repo pushed to https://github.com/anytroops/market-lens (public), Sean's
+  standing instruction: push every feature-sized commit immediately.
+- YES base rate about 32% on both platforms (multi-outcome events make
+  this expected); sports is 43% of Polymarket headline and 70% of Kalshi.
+
+## 2026-07-09: Phase 1, ingestion pipeline built
 
 Done:
 - Project scaffolded: pyproject.toml, config.yaml (all assumptions live here),

@@ -41,6 +41,19 @@ is, why it exists, and what it affects.
   matched-pair price histories in the divergence study, where outcomes come
   from the Polymarket leg.
 
+## Upstream data holes (measured 2026-07-10, Phase 1)
+
+- **Kalshi effective coverage is May 2026 onward** (about 10 weeks at
+  ingestion time). Pre-May metadata that the API still returns has empty
+  result fields, so it cannot enter the calibration set either.
+- **Polymarket March 2026 metadata hole.** Gamma returns almost no markets
+  ending March 5 to 26, 2026 (verified live, not an ingestion bug). Treat
+  March 2026 as under-covered.
+- **Polymarket spring 2026 price-history hole.** About 2.7% of the sampled
+  markets, nearly all closing April 2026 and skewed toward high volume
+  (average $53k), return zero points from the CLOB prices-history endpoint.
+  Verified live on individual high-volume markets.
+
 ## Statistical dependence
 
 - **Multi-outcome events create dependent rows.** A "who wins the
