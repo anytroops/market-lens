@@ -71,6 +71,25 @@ def ingest(
 
 
 @app.command()
+def match(
+    since: str = typer.Option("2026-04-28", help="close date lower bound (ISO)"),
+    until: str = typer.Option(None, help="close date upper bound, defaults to config until"),
+    threshold: float = typer.Option(85.0, help="token_set_ratio cutoff, 0 to 100"),
+    window_days: int = typer.Option(3, help="max close-date difference in days"),
+    out: str = "reports/match_candidates.csv",
+    config: str = "config.yaml",
+) -> None:
+    """Generate cross-platform match candidates for human verification."""
+    from marketlens.matching.runner import run_matching
+
+    cfg, conn = _connect(config)
+    stats = run_matching(conn, since, until or cfg.ingestion.until,
+                         threshold, window_days, cfg.root / out)
+    conn.close()
+    typer.echo(f"match stats: {stats}")
+
+
+@app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
     config: str = "config.yaml",

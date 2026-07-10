@@ -1,5 +1,30 @@
 # Worklog
 
+## 2026-07-10: Phase 2, cross-platform matching built and run
+
+Done:
+- matcher.py: blocking (close-date window per bucket, coarse category
+  buckets), token_set_ratio scoring, deterministic compatibility guards
+  (numeric-token equality, max/min temperature, 1st/2nd half, toss,
+  bare-moneyline rule, weather city from Kalshi series ticker), mutual-best
+  filter. 13 new unit tests, each guard test reproduces a labeled false
+  match from the tuning sample.
+- Run on the overlap window (May to July 2026): 108,320 Polymarket vs
+  235,642 Kalshi headline markets, 8,946 mutual-best candidates.
+- Measured precision by hand-labeling stratified samples before and after
+  guards (reports/match_precision_sample.csv): the guards moved the 85+
+  bands from roughly 60% to roughly 90% precision. Details and the
+  residual semantic false modes in reports/matching.md.
+- Emitted reports/match_candidates.csv (8,946 rows, verified column empty)
+  with verification instructions incl. leg orientation (inv) and basis
+  risk (br) codes.
+
+Waiting on Sean:
+- Verification pass over match_candidates.csv, at minimum the 19
+  both-priced pairs and the top of the 85+ band. Phase 4 uses only
+  verified rows; Phase 3 (calibration) does not depend on matching and
+  can start on go-ahead.
+
 ## 2026-07-10: Phase 1 sign-off decisions (Sean delegated, Claude chose)
 
 - Kalshi window: accept the API-retained window (usable from May 2026).

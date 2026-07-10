@@ -1,0 +1,61 @@
+band,score,label,note,pm_id,pm_title,kalshi_id,kalshi_title,kalshi_subtitle
+95-101,95.6,FALSE,win-CWS vs matchup-occurs,2446561,Will Ole Miss win the 2026 College World Series?,KXTEAMSINNCAABBWS-26-OLEOKL,Will Ole Miss vs Oklahoma be the matchup in the 2026 College Baseball World Series Finals?,Ole Miss vs Oklahoma
+95-101,100.0,TRUE,,2731470,Will Zach Johnson win the 2026 John Deere Classic?,KXPGATOUR-JODC26-ZJOH,Will Zach Johnson win the John Deere Classic?,Zach Johnson
+95-101,100.0,TRUE,,1335410,Will Julie Johnson be the Democratic nominee for TX-33?,KXTX33D-26-JJOH,Will Julie Johnson be the Democratic nominee for TX-33?,Julie Johnson
+95-101,96.0,TRUE,,2520821,Lautaro Martínez: 1+ goals,KXWCGOAL-26JUN16ARGDZA-ARGLMARTI10-1,Lautaro Martinez: 1+ goals,Lautaro Martinez: 1+
+95-101,97.7,TRUE,,2717441,Kylian Mbappé: 3+ goals,KXWCGOAL-26JUN30FRASWE-FRAKMBAPP10-3,Kylian Mbappe: 3+ goals,Kylian Mbappe: 3+
+95-101,100.0,TRUE,,2231968,Will Russell Henley finish in the Top 10 at the 2026 PGA Championship?,KXPGATOP10-PGC26-RHEN,PGA Championship: Will Russell Henley finish top 10?,Russell Henley
+95-101,100.0,TRUE,,2156055,Will Xander Schauffele win the 2026 Truist Championship?,KXPGATOUR-TRC26-XSCH,Will Xander Schauffele win the Truist Championship?,Xander Schauffele
+95-101,100.0,TRUE,,2620376,Cristiano Ronaldo: 2+ goals,KXWCGOAL-26JUN23PORUZB-PORCRIS7-2,Cristiano Ronaldo: 2+ goals,Cristiano Ronaldo: 2+
+95-101,100.0,TRUE,,2354204,Will Hideki Matsuyama win the 2026 Charles Schwab Challenge?,KXPGATOUR-CHSC26-HMAT,Will Hideki Matsuyama win the Charles Schwab Challenge?,Hideki Matsuyama
+95-101,100.0,TRUE,,2520894,Kevin De Bruyne: 1+ assists,KXWCAST-26JUN15BELEGY-BELKDEBR11-1,Kevin De Bruyne: 1+ assists?,Kevin De Bruyne: 1+
+95-101,100.0,TRUE,,2486800,Dan Ndoye: 2+ goals,KXWCGOAL-26JUN13QATSUI-SUIDNDOYE14-2,Dan Ndoye: 2+ goals,Dan Ndoye: 2+
+95-101,100.0,TRUE,,2553516,Will Tom Kim win the 2026 U.S. Open?,KXPGATOUR-USO26-TKIM,Will Tom Kim win the U.S. Open?,Tom Kim
+95-101,100.0,TRUE,,2411351,Will Xander Schauffele win the 2026 the Memorial Tournament presented by Workday?,KXPGATOUR-THMTPBW26-XSCH,Will Xander Schauffele win the the Memorial Tournament presented by Workday?,Xander Schauffele
+95-101,100.0,FALSE,overall winner vs jury vote,842022,Will Latvia win Eurovision 2026?,KXEUROVISIONJURY-26-LAT,Who will win the Jury Vote in Eurovision 2026?,Latvia
+95-101,100.0,TRUE,,2717563,Antonio Nusa: 1+ assists,KXWCAST-26JUN30CIVNOR-NORANUSA7-1,Antonio Nusa: 1+ assists?,Antonio Nusa: 1+
+85-95,89.2,TRUE,,2157796,Set 1 Winner: Carabelli vs Shevchenko,KXATPSETWINNER-26MAY06UGOSHE-1-UGO,Will Camilo Ugo Carabelli win set 1 in the Camilo Ugo Carabelli vs Alexander Shevchenko match,Camilo Ugo Carabelli
+85-95,88.4,TRUE,,2326740,Côte d'Ivoire vs. Ecuador: Both Teams to Score,KXWCBTTS-26JUN13HTISCO-BTTS,Will both teams score?,Both Teams To Score
+85-95,86.6,TRUE,,2431097,Will Golden Knights win the 2026 Stanley Cup 4-3 be the exact series outcome?,KXNHLSERIESSCORE-26VGKCARFIN-VGK43,Will Vegas Golden Knights win 4-3 in the Vegas Golden Knights vs Carolina Hurricanes Stanley Cup series in the 2026 NHL Playoffs?,VGK wins 4-3
+85-95,94.5,TRUE,,1335330,Will Christian Menefee be the Democratic nominee for TX-18?,KXTX18D-26-CMEN,Will Christian Menefee be the Democratic nominee for Texas 18th congressional district?,Christian Menefee
+85-95,88.9,TRUE,,2520558,Luis Díaz: 2+ goals,KXWCGOAL-26JUN17UZBCOL-COLLDIAZ14-2,Luis Diaz: 2+ goals,Luis Diaz: 2+
+85-95,86.3,FALSE,most assists vs most goals,1400193,Will Khvicha Kvaratskhelia record the most assists in the 2025-26 UEFA Champions League?,KXLEADERUCLGOALS-26-KKVA,Will Khvicha Kvaratskhelia lead UEFA Champions League in goals scored for the 2025-26 season (including league phase and knockout rounds)?,Khvicha Kvaratskhelia
+85-95,94.3,TRUE,,1835894,Will Alexis Tipton as Reze (Chainsaw Man – The Movie: Reze Arc) win Best Anime Voice Artist Performance (English) at the 2026 Crunchyroll Anime Awards?,KXANIMEBVAPE-26-ALE,2026 Crunchyroll Anime Award for Best Anime Voice Artist Performance (English)?,Alexis Tipton as Reze
+85-95,92.0,TRUE,,2554363,Maccabi Tel-Aviv vs. Hapoel Tel-Aviv,KXISLGAME-26JUN161350HTAMTA-MTA,Hapoel Tel-Aviv vs Maccabi Tel-Aviv Winner?,Maccabi Tel-Aviv
+85-95,92.5,TRUE,,1343569,Will Oliver Suvanto be drafted 1st overall in the 2026 NHL Draft?,KXNHLDRAFTPICK-26-1-OSUV,Will Oliver Suvanto be picked 1st in the NHL Draft?,Oliver Suvanto
+85-95,85.7,TRUE,inverse leg,2329493,Set 1 Winner: Bonzi vs Zverev,KXATPSETWINNER-26MAY24BONZVE-1-ZVE,Will Alexander Zverev win set 1 in the Benjamin Bonzi vs Alexander Zverev match,Alexander Zverev
+85-95,86.8,TRUE,inverse leg,2483890,Set 1 Winner: Bouzkova vs Vekic,KXWTASETWINNER-26JUN10BOUVEK-1-VEK,Will Donna Vekic win set 1 in the Marie Bouzkova vs Donna Vekic match,Donna Vekic
+85-95,94.4,TRUE,,2446563,Will Oklahoma win the 2026 College World Series?,KXNCAABASEBALL-26-OKLA,Will Oklahoma win the College Baseball World Series?,Oklahoma
+85-95,85.7,TRUE,,2573731,Kenan Yıldız: 2+ goals,KXWCGOAL-26JUN19TURPAR-TURKYILDI10-2,Kenan Yildiz: 2+ goals,Kenan Yildiz: 2+
+85-95,86.8,TRUE,,2705009,Set 1 Winner: Yastremska vs Ito,KXWTASETWINNER-26JUN29YASITO-1-YAS,Will Dayana Yastremska win set 1 in the Dayana Yastremska vs Aoi Ito match,Dayana Yastremska
+85-95,87.5,TRUE,,2092505,Toulouse FC vs. Olympique Lyonnais: Both Teams to Score,KXLIGUE1BTTS-26MAY10TFCOL,Lyon at Toulouse: Both Teams to Score,Both Teams To Score
+75-85,83.6,TRUE,"primary winner=nominee, basis risk",904353,Will Julie Stauch win the 2026 Iowa Governor Democratic primary election?,KXGOVIANOMD-26-JSTA,Will Julie Stauch be the Democratic nominee for Governor in Iowa?,Julie Stauch
+75-85,80.0,TRUE,inverse leg,2320873,LoL: Eintracht Spandau vs E WIE EINFACH E-SPORTS - Game 2 Winner,KXLOLMAP-26MAY261100EWIES-2-EWI,Will E WIE EINFACH E-SPORTS win map 2 in the E WIE EINFACH E-SPORTS vs. Eintracht Spandau match?,E WIE EINFACH E-SPORTS
+75-85,84.2,FALSE,any-England-team vs Arsenal,1510177,Will a team from England be the 2026 Champions League winner?,KXUCL-26-ARS,Will Arsenal win the Champions League Winner?,Arsenal
+75-85,76.2,TRUE,,2234103,Valorant: Sentinels vs Evil Geniuses - Map 2 Winner,KXVALORANTMAP-26MAY122000EGSEN-2-SEN,Will Sentinels win map 2 in the Evil Geniuses vs. Sentinels match?,Sentinels
+75-85,78.0,TRUE,,2128335,LoL: Ninjas in Pyjamas vs Invictus Gaming - Game 2 Winner,KXLOLMAP-26MAY090500IGNIP-2-NIP,Will Ninjas in Pyjamas win map 2 in the Invictus Gaming vs. Ninjas in Pyjamas match?,Ninjas in Pyjamas
+75-85,75.8,FALSE,between 94-95 vs 95-or-above,2179188,Will the highest temperature in Miami be between 94-95°F on May 9?,KXHIGHMIA-26MAY09-T94,"Will the **high temp in Miami** be >94° on May 9, 2026?",95° or above
+75-85,80.6,TRUE,"chart week anchor differs, check",2333555,"Will ""Maid of Honor - Drake"" be the Billboard 200 #1 album for the week of June 6?",KXTOPALBUM-26JUN06-MAI,"Will MAID OF HONOUR be #1 on the Billboard 200 during the week of Jun 6, 2026",MAID OF HONOUR
+75-85,76.1,TRUE,,2548873,Call of Duty: Vancouver Surge vs Los Angeles Thieves - Game 3 Winner,KXCODMAP-26JUN201630LATVAN-3-VAN,Will Vancouver Surge win map 3 in the Los Angeles Thieves vs. Vancouver Surge match?,Vancouver Surge
+75-85,80.0,FALSE,different player (Ahmed vs Olwan),2698406,Ali Ahmed: 2+ goals,KXWCGOAL-26JUN27JORARG-JORAOLWAN9-2,Ali Iyad Olwan: 2+ goals,Ali Iyad Olwan: 2+
+75-85,75.0,TRUE,inverse leg,2275173,World Championships: Germany vs. Hungary,KXIIHFGAME-26MAY221020HUNGER-HUN,Hungary at Germany Winner?,Hungary
+75-85,78.0,TRUE,,2162760,Manchester United FC vs. Nottingham Forest FC: O/U 3.5,KXEPLTOTAL-26MAY17MUNNFO-3,Nottingham at Manchester United: Totals,Over 3.5 goals scored
+75-85,76.5,TRUE,inverse leg,2223310,LoL: Hanwha Life Esports vs KT Rolster - Game 2 Winner,KXLOLMAP-26MAY170400KTHLE-2-KT,Will KT Rolster win map 2 in the KT Rolster vs. Hanwha Life Esports match?,KT Rolster
+75-85,75.0,FALSE,team total O/U vs margin,2719250,Switzerland vs. Algeria: Switzerland 1st Half O/U 1.5,KXWC1HSPREAD-26JUL02SUIDZA-SUI2,Switzerland wins by more than 1.5 goals in the 1st Half?,Goal Difference: Switzerland wins the 1H by more than 1.5 goals
+75-85,76.5,TRUE,,2554157,LoL: Karmine Corp vs Deep Cross Gaming - Game 2 Winner,KXLOLMAP-26JUN280400DCGKC-2-KC,Will Karmine Corp win map 2 in the Deep Cross Gaming vs. Karmine Corp match?,Karmine Corp
+75-85,78.8,TRUE,,2061948,FC Bayern München vs. Paris Saint-Germain FC: Both Teams to Score,KXUCLBTTS-26MAY06BMUPSG,PSG at Bayern Munich: Both Teams to Score,Both Teams To Score
+60-75,64.3,FALSE,different sport,2394401,Games Total: O/U 3.5,KXMLBTOTAL-26JUN012138COLLAA-4,Colorado vs Los Angeles A Total Runs?,Over 3.5 runs scored
+60-75,71.8,TRUE,,2425316,Counter-Strike: LPH Gaming vs INFURITY Gaming - Map 1 Winner,KXCS2MAP-26JUN050630INFLPH-1-LPH,Will LPH Gaming win map 1 in the INFURITY Gaming vs. LPH Gaming match?,LPH Gaming
+60-75,61.1,FALSE,total vs margin,2323757,Croatia vs. Ghana: O/U 1.5,KXWCSPREAD-26JUN27CROGHA-CRO2,Croatia wins by more than 1.5 goals?,Goal Difference: Croatia wins by more than 1.5 goals
+60-75,68.3,FALSE,2nd-half win vs first goal,2497188,Saudi Arabia to win the second half?,KXWCFTTS-26JUN15KSAURU-KSA,Will Saudi Arabia record the first goal of the game?,Saudi Arabia
+60-75,60.9,TRUE,,2322776,Exact Score: Switzerland 3 - 1 Bosnia-Herzegovina?,KXWCSCORE-26JUN18SUIBIH-SUI3BIH1,Will the final score be Switzerland wins 3-1?,Switzerland wins 3-1
+60-75,61.5,TRUE,,2145785,Spread: RB Leipzig (-1.5),KXBUNDESLIGASPREAD-26MAY16SCFRBL-RBL1,Leipzig wins by over 1.5 goals?,Leipzig wins by over 1.5 goals
+60-75,68.9,TRUE,,2083079,RB Leipzig vs. FC St. Pauli 1910: O/U 4.5,KXBUNDESLIGATOTAL-26MAY09RBLSTP-4,St. Pauli at Leipzig: Totals,Over 4.5 goals scored
+60-75,68.2,FALSE,total vs margin,2326802,Qatar vs. Switzerland: O/U 1.5,KXWCSPREAD-26JUN13QATSUI-SUI2,Switzerland wins by more than 1.5 goals?,Goal Difference: Switzerland wins by more than 1.5 goals
+60-75,68.2,FALSE,unrelated,2108514,"Will Donald Trump sign an executive order on May 19, 2026?",KXTRUMPENDORSE-26SEP15-DDOO,"Will Donald Trump endorse Derek Dooley in the 2026 Georgia Senate Republican primary before May 19, 2026?",Derek Dooley
+60-75,64.3,FALSE,different sport,2495745,Games Total: O/U 2.5,KXMLBTOTAL-26JUN131610LADCWS-3,Los Angeles D vs Chicago WS Total Runs?,Over 2.5 runs scored
+60-75,60.0,FALSE,different teams,2497223,Tunisia to win the second half?,KXUSLGAME-26JUN13CHATUL-TIE,Charleston vs Tulsa Winner?,Tie
+60-75,67.6,FALSE,game-2 winner vs match winner,2121196,LoL: G2 Esports vs Natus Vincere - Game 2 Winner,KXLOLGAME-26MAY141100NAVIG2-NAVI,Will Natus Vincere win the Natus Vincere vs. G2 Esports League of Legends match?,Natus Vincere
+60-75,70.7,FALSE,primary advance vs November win,825466,Will Leo Zacky advance from the 2026 California Governor primary election?,KXGOVCA-26-LZAC,Who will win the governorship in California?,Leo Zacky
+60-75,71.9,TRUE,,2369506,Valorant: QoR vs NRG Academy - Map 2 Winner,KXVALORANTMAP-26MAY281600NRGAQOR-2-QOR,Will QoR win map 2 in the NRG Academy vs. QoR match?,QoR
+60-75,71.4,TRUE,,2556705,Counter-Strike: Aurora Gaming vs BetBoom Team - Map 2 Winner,KXCS2MAP-26JUN180945BETAUR-2-BET,Will BetBoom win map 2 in the BetBoom vs. Aurora Gaming match?,BetBoom
