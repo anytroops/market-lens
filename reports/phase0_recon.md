@@ -47,13 +47,23 @@ Both formulas go into `config.yaml` with these source links and today's retrieva
 2. Kalshi settled-market metadata includes `rules_primary` / `rules_secondary` text fields. Useful later for the basis-risk check on matched pairs.
 3. Polymarket multi-outcome events arrive as separate binary markets grouped under an `events` array, matching the spec's plan to treat each binary leg as a row.
 
-## Correction found during Phase 1 (2026-07-09)
+## Corrections found during Phase 1 (2026-07-09)
 
-The Kalshi row above says `status=settled` listing works. It does return
-markets, but it silently omits everything settled before roughly December
-2025 (older markets report status `closed` or `finalized`, and the endpoint
-rejects those as filter values). Phase 1 therefore queries with no status
-filter and keeps markets whose `result` field is `yes` or `no`.
+1. The Kalshi row above says `status=settled` listing works. It does return
+   markets, but it silently omits everything settled before roughly December
+   2025 (older markets report status `closed` or `finalized`, and the
+   endpoint rejects those as filter values). Phase 1 queries with no status
+   filter and keeps markets whose `result` field is `yes` or `no`.
+2. Worse: Kalshi's trade API has a retention cliff. Markets settled before
+   about December 2025 are purged entirely (404 on direct GET, absent from
+   every listing route including nested event markets), and December 2025 to
+   April 2026 coverage is patchy. The recon table's "history depth" optimism
+   was wrong for Kalshi: 24 months of Kalshi resolved markets are NOT
+   obtainable from the API. The public S3 daily reporting files go back to
+   2021 but contain last-trade prices only (no results, no titles), so they
+   cannot support calibration. Consequence and options are written up in
+   WORKLOG.md and LIMITATIONS.md; Kalshi calibration is limited to the
+   API-retained window.
 
 ## Rate limits observed
 

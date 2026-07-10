@@ -78,11 +78,12 @@ def connect(db_path: str | Path, min_lifetime_hours: float = 24.0) -> sqlite3.Co
     """Open the database, creating tables and the headline view on first use."""
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
+    # Both platforms can ingest concurrently into one database; the busy
+    # timeout must be set before any statement that can take locks
+    # (journal_mode and DDL below), so it goes first.
+    conn.execute("PRAGMA busy_timeout = 60000")
     conn.execute("PRAGMA journal_mode = WAL")
     conn.execute("PRAGMA foreign_keys = ON")
-    # Both platforms can ingest concurrently into one database; WAL plus a
-    # generous busy timeout lets the two writers interleave safely.
-    conn.execute("PRAGMA busy_timeout = 60000")
     conn.executescript(SCHEMA)
     conn.executescript(HEADLINE_VIEW.format(min_lifetime_hours=float(min_lifetime_hours)))
     return conn

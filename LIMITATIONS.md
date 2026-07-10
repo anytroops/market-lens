@@ -23,6 +23,24 @@ is, why it exists, and what it affects.
   volume are absent, so "thin market" findings only speak to thin-but-not-dead
   markets. Kalshi has no volume floor in the frame.
 
+## Kalshi history retention (discovered 2026-07-09, Phase 1)
+
+- **Kalshi's trade API purges old settled markets.** Markets settled before
+  roughly December 2025 return 404 even on direct GET, and coverage between
+  December 2025 and April 2026 is patchy (measured month by month; March and
+  April 2026 show far fewer markets than actually existed). Only from about
+  May 2026 does the API look complete. The Kalshi side of the dataset is
+  therefore a much shorter window than Polymarket's 24 months, and even that
+  window has gaps that the data quality report quantifies.
+- **The public S3 daily reporting files cannot fill the outcome gap.** Kalshi
+  publishes daily market data files back to 2021, but they carry only daily
+  high/low of the LAST TRADED price, which freezes at the final trade after
+  settlement (never-traded markets show 50). Inferring outcomes from final
+  prices would circularly bias a calibration study toward looking perfectly
+  calibrated, so it is not done. The files remain usable later for extending
+  matched-pair price histories in the divergence study, where outcomes come
+  from the Polymarket leg.
+
 ## Statistical dependence
 
 - **Multi-outcome events create dependent rows.** A "who wins the

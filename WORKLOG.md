@@ -36,11 +36,33 @@ Decisions made (with Sean's two calls as input):
 - Polymarket keyset cursor parameter pinned down: after_cursor (from the
   API's own OpenAPI spec), page cap 100.
 
+Major discovery, needs Sean's decision before Phase 3:
+- Kalshi's trade API purges old settled markets. Direct GET returns 404 for
+  anything settled before roughly Dec 2025; Dec 2025 to Apr 2026 is patchy;
+  May 2026 onward looks complete. So the agreed 24-month window is NOT
+  obtainable for Kalshi from the API, no matter how we ingest.
+- Kalshi's public S3 daily reporting files (back to 2021) were evaluated as
+  a fallback: they have daily high/low of last-trade prices but NO outcomes,
+  NO titles. Verified concretely on FED-25MAR: finalized rows freeze at the
+  last traded price, and never-traded strikes show 50. Inferring outcomes
+  from final prices would bias calibration toward perfection, so it is
+  ruled out for the calibration study.
+- Options: (a) accept a shorter Kalshi window (API-retained period) for
+  Kalshi calibration and matched-pair work, keeping Polymarket at 24 months;
+  (b) later, use the S3 files to extend matched-pair PRICE histories for the
+  divergence study only, where outcomes come from the Polymarket leg.
+  Phase 1 proceeds with (a): the ingester scans the full window and stores
+  whatever the API still has, and the data quality report shows the real
+  coverage.
+
 Open questions for Sean:
 1. Is the $1,000 Polymarket volume floor acceptable for the frame, or would
    you rather lower it and accept a bigger, thinner dataset?
 2. Is 15,000 sampled price histories per platform enough for Phase 3, or
    raise it (cost is roughly linear in requests)?
+3. Kalshi history: OK to proceed with the API-retained window (roughly Dec
+   2025 onward, complete from May 2026) as the Kalshi dataset, per the
+   options above?
 
 ## 2026-07-09: Phase 0 complete, verdict GO
 
