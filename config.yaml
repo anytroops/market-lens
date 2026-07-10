@@ -1,0 +1,84 @@
+# market-lens configuration. All tunable assumptions live here, not in code.
+
+ingestion:
+  # Sean's decision 2026-07-09: 24 months back from project start.
+  since: "2024-07-09"
+  until: "2026-07-09"
+  # Sean's decision 2026-07-09: markets alive for under 24 hours are excluded
+  # from the headline dataset. This removes the 15-minute crypto up/down
+  # contracts and similar short-cycle spam that floods both platforms.
+  min_lifetime_hours: 24
+  # Price history granularity in minutes. 1440 = daily closes.
+  price_fidelity_minutes: 1440
+  # Price histories cost one API request per market, so they are fetched for a
+  # uniform random sample of headline-eligible markets rather than the full
+  # frame (Phase 0 follow-up measurement 2026-07-09: the full frame is in the
+  # hundreds of thousands per platform, far beyond what per-market requests
+  # allow). A seeded uniform sample keeps calibration estimates unbiased for
+  # the frame. Phase 2 fetches prices for specific matched pairs on demand.
+  price_sample_size: 15000
+  sample_seed: 42
+
+storage:
+  db_path: "data/marketlens.sqlite"
+  raw_dir: "data/raw"
+
+http:
+  user_agent: "market-lens-research/0.1 (academic-style calibration study; contact: anytroops12345@gmail.com)"
+  timeout_seconds: 30
+  max_retries: 6
+  backoff_base_seconds: 1.0
+  backoff_factor: 2.0
+  # Polite request pacing per host, requests per second.
+  requests_per_second: 4
+
+polymarket:
+  gamma_base_url: "https://gamma-api.polymarket.com"
+  clob_base_url: "https://clob.polymarket.com"
+  page_size: 100 # verified maximum for /markets/keyset on 2026-07-09
+  # Metadata frame floor in USD volume. Measured 2026-07-09: without a floor
+  # the 24-month window holds millions of closed markets (sports props and
+  # 15-minute crypto contracts). $1,000 keeps genuinely thin markets for the
+  # liquidity-tercile analysis while making the frame tractable.
+  metadata_min_volume: 1000
+
+kalshi:
+  base_url: "https://api.elections.kalshi.com/trade-api/v2"
+  page_size: 1000 # verified maximum for /markets on 2026-07-09
+  # Series-first ingestion. These series are skipped wholesale: their markets
+  # are sub-24h by construction (excluded per Sean's decision) or are
+  # multivariate combo products, and together they account for tens of
+  # thousands of settled markets per day.
+  skip_frequencies: ["fifteen_min", "hourly"]
+  skip_ticker_prefixes: ["KXMVE"]
+  skip_categories: ["Exotics"]
+
+# Fee schedules, verified 2026-07-09 during Phase 0. Both platforms charge
+# takers fee = rate * contracts * price * (1 - price), rounded up per order.
+# Used in Phase 5 (backtest); recorded here so the source and retrieval date
+# are pinned.
+fees:
+  kalshi:
+    taker_rate: 0.07
+    maker_rate_fraction_of_taker: 0.25
+    note: "Standard markets. Premium categories (e.g. crypto) can be higher; check per-series fee_multiplier and fee_type fields from GET /series/{ticker} during backtest."
+    source: "https://kalshi.com/docs/kalshi-fee-schedule.pdf"
+    retrieved: "2026-07-09"
+  polymarket:
+    taker_rates_by_category:
+      crypto: 0.07
+      sports: 0.05
+      finance: 0.04
+      politics: 0.04
+      mentions: 0.04
+      tech: 0.04
+      geopolitics: 0.0
+      default: 0.05
+    maker_rate: 0.0
+    source: "https://docs.polymarket.com/polymarket-learn/trading/fees"
+    retrieved: "2026-07-09"
+
+backtest:
+  # Polymarket has no historical bid/ask, so its leg gets a slippage haircut
+  # in probability points. Sensitivity analysis sweeps this 0 to 3.
+  polymarket_slippage_points: 1.0

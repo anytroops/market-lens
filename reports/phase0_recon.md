@@ -47,6 +47,14 @@ Both formulas go into `config.yaml` with these source links and today's retrieva
 2. Kalshi settled-market metadata includes `rules_primary` / `rules_secondary` text fields. Useful later for the basis-risk check on matched pairs.
 3. Polymarket multi-outcome events arrive as separate binary markets grouped under an `events` array, matching the spec's plan to treat each binary leg as a row.
 
+## Correction found during Phase 1 (2026-07-09)
+
+The Kalshi row above says `status=settled` listing works. It does return
+markets, but it silently omits everything settled before roughly December
+2025 (older markets report status `closed` or `finalized`, and the endpoint
+rejects those as filter values). Phase 1 therefore queries with no status
+filter and keeps markets whose `result` field is `yes` or `no`.
+
 ## Rate limits observed
 
 None hit during recon (single sequential requests). Kalshi documents rate limits on its API; the shared client should default to modest concurrency, exponential backoff on 429/5xx, and disk caching regardless.

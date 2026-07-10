@@ -1,5 +1,47 @@
 # Worklog
 
+## 2026-07-09: Phase 1, ingestion pipeline built (run results appended below when complete)
+
+Done:
+- Project scaffolded: pyproject.toml, config.yaml (all assumptions live here),
+  src/marketlens package per spec, typer CLI (marketlens init-db / ingest /
+  quality-report), pytest suite for parsers, loaders, sampling, and stats
+  helpers.
+- SQLite schema: markets, prices, matches with spec primary keys and indexes,
+  plus a headline_markets view that encodes the inclusion policy (resolved
+  binary, lifetime 24h+) in one place.
+- Shared BaseClient: per-request pacing, exponential backoff with jitter on
+  429/5xx honoring Retry-After, descriptive user agent, and every raw response
+  archived gzipped to data/raw/ before parsing. The archive doubles as a
+  cache, so re-runs never re-hit the APIs. Verified: an identical re-run made
+  zero network calls and duplicated zero rows.
+
+Decisions made (with Sean's two calls as input):
+- Inclusion policy implemented as agreed: markets alive under 24 hours are
+  excluded from the headline dataset; window is 2024-07-09 to 2026-07-09.
+- NEW, needs Sean's review: the raw universe is far larger than the spec
+  assumed. Measured 2026-07-09: Kalshi has 60,000+ settled markets in a
+  single day, Polymarket 6,000+, mostly 15-minute crypto, per-game sports
+  props, and combo products. Pulling everything is not feasible or useful, so
+  the frame is: (a) Polymarket metadata floor of $1,000 lifetime volume plus
+  a server-side "started at least 1 day before scheduled end" prefilter;
+  (b) Kalshi series-first ingestion skipping fifteen_min/hourly series and
+  KXMVE/Exotics combo series; (c) price histories fetched for a seeded
+  uniform random sample of 15,000 headline markets per platform rather than
+  all of them (one API request per market is the binding cost). A uniform
+  sample keeps calibration unbiased for the frame. All knobs in config.yaml.
+- Kalshi API quirk discovered: status=settled silently omits markets settled
+  before roughly Dec 2025. Fix: no status filter, resolve client-side from
+  the result field. Correction noted in reports/phase0_recon.md.
+- Polymarket keyset cursor parameter pinned down: after_cursor (from the
+  API's own OpenAPI spec), page cap 100.
+
+Open questions for Sean:
+1. Is the $1,000 Polymarket volume floor acceptable for the frame, or would
+   you rather lower it and accept a bigger, thinner dataset?
+2. Is 15,000 sampled price histories per platform enough for Phase 3, or
+   raise it (cost is roughly linear in requests)?
+
 ## 2026-07-09: Phase 0 complete, verdict GO
 
 Done:

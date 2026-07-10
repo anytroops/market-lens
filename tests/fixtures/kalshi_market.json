@@ -1,0 +1,93 @@
+{
+ "can_close_early": true,
+ "close_time": "2026-07-10T01:42:19Z",
+ "created_time": "2026-07-09T19:48:09.881056Z",
+ "custom_strike": {
+  "Associated Events": "KXMLBGAME-26JUL091840SEAMIA,KXMLBGAME-26JUL091945MILSTL,KXMLBGAME-26JUL092145COLSF,KXMLBSPREAD-26JUL091840ATHDET,KXMLBSPREAD-26JUL091910PHICIN,KXMLBSPREAD-26JUL092005LAATEX,KXMLBSPREAD-26JUL092140AZSD",
+  "Associated Market Sides": "yes,yes,yes,yes,yes,yes,yes",
+  "Associated Markets": "KXMLBGAME-26JUL091840SEAMIA-SEA,KXMLBGAME-26JUL091945MILSTL-STL,KXMLBGAME-26JUL092145COLSF-SF,KXMLBSPREAD-26JUL091840ATHDET-DET3,KXMLBSPREAD-26JUL091910PHICIN-PHI4,KXMLBSPREAD-26JUL092005LAATEX-TEX3,KXMLBSPREAD-26JUL092140AZSD-SD2",
+  "Multivariate Event Ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S2026FFBBE7C6DDC"
+ },
+ "event_ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S2026FFBBE7C6DDC",
+ "expected_expiration_time": "2026-07-10T04:45:00Z",
+ "expiration_time": "2026-07-13T01:45:00Z",
+ "expiration_value": "",
+ "is_provisional": true,
+ "last_price_dollars": "0.0000",
+ "latest_expiration_time": "2026-07-13T01:45:00Z",
+ "liquidity_dollars": "0.0000",
+ "market_type": "binary",
+ "mve_collection_ticker": "KXMVESPORTSMULTIGAMEEXTENDED-R",
+ "mve_selected_legs": [
+  {
+   "event_ticker": "KXMLBGAME-26JUL091840SEAMIA",
+   "market_ticker": "KXMLBGAME-26JUL091840SEAMIA-SEA",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBGAME-26JUL091945MILSTL",
+   "market_ticker": "KXMLBGAME-26JUL091945MILSTL-STL",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBGAME-26JUL092145COLSF",
+   "market_ticker": "KXMLBGAME-26JUL092145COLSF-SF",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBSPREAD-26JUL091840ATHDET",
+   "market_ticker": "KXMLBSPREAD-26JUL091840ATHDET-DET3",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBSPREAD-26JUL091910PHICIN",
+   "market_ticker": "KXMLBSPREAD-26JUL091910PHICIN-PHI4",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBSPREAD-26JUL092005LAATEX",
+   "market_ticker": "KXMLBSPREAD-26JUL092005LAATEX-TEX3",
+   "side": "yes"
+  },
+  {
+   "event_ticker": "KXMLBSPREAD-26JUL092140AZSD",
+   "market_ticker": "KXMLBSPREAD-26JUL092140AZSD-SD2",
+   "side": "yes"
+  }
+ ],
+ "no_ask_dollars": "1.0000",
+ "no_bid_dollars": "0.0000",
+ "no_sub_title": "yes Seattle,yes St. Louis,yes San Francisco,yes Detroit wins by over 2.5 runs,yes Philadelphia wins by over 3.5 runs,yes Texas wins by over 2.5 runs,yes San Diego wins by over 1.5 runs",
+ "notional_value_dollars": "1.0000",
+ "open_interest_fp": "0.00",
+ "open_time": "2026-07-09T19:48:09Z",
+ "previous_price_dollars": "0.0000",
+ "previous_yes_ask_dollars": "0.0000",
+ "previous_yes_bid_dollars": "0.0000",
+ "price_level_structure": "deci_cent",
+ "price_ranges": [
+  {
+   "end": "1.0000",
+   "start": "0.0000",
+   "step": "0.0010"
+  }
+ ],
+ "result": "no",
+ "rules_primary": "",
+ "rules_secondary": "",
+ "settlement_timer_seconds": 5,
+ "settlement_ts": "2026-07-10T01:42:19.039215Z",
+ "settlement_value_dollars": "0.0000",
+ "status": "finalized",
+ "strike_type": "custom",
+ "ticker": "KXMVESPORTSMULTIGAMEEXTENDED-S2026FFBBE7C6DDC-540BCC1B860",
+ "title": "yes Seattle,yes St. Louis,yes San Francisco,yes Detroit wins by over 2.5 runs,yes Philadelphia wins by over 3.5 runs,yes Texas wins by over 2.5 runs,yes San Diego wins by over 1.5 runs",
+ "updated_time": "2026-07-10T01:42:19.087526Z",
+ "volume_24h_fp": "0.00",
+ "volume_fp": "0.00",
+ "yes_ask_dollars": "1.0000",
+ "yes_ask_size_fp": "0.00",
+ "yes_bid_dollars": "0.0000",
+ "yes_bid_size_fp": "0.00",
+ "yes_sub_title": "yes Seattle,yes St. Louis,yes San Francisco,yes Detroit wins by over 2.5 runs,yes Philadelphia wins by over 3.5 runs,yes Texas wins by over 2.5 runs,yes San Diego wins by over 1.5 runs"
+}
