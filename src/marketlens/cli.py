@@ -90,6 +90,27 @@ def match(
 
 
 @app.command()
+def calibrate(
+    out: str = "reports/calibration_tables.md",
+    config: str = "config.yaml",
+) -> None:
+    """Run the calibration analysis, write figures and result tables.
+
+    The narrative findings live in reports/results.md, which is authored
+    by hand and never overwritten by this command.
+    """
+    from marketlens.analysis.report import run_analysis
+
+    cfg, conn = _connect(config)
+    section = run_analysis(conn, cfg.root)
+    conn.close()
+    out_path = cfg.root / out
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(section)
+    typer.echo(f"wrote {out_path}")
+
+
+@app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
     config: str = "config.yaml",

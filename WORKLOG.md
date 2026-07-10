@@ -1,5 +1,31 @@
 # Worklog
 
+## 2026-07-10: Phase 3, calibration analysis complete
+
+Done:
+- analysis/calibration.py: wilson_interval, brier_score,
+  murphy_decomposition, calibration_table, price_at_horizon. All pure,
+  15 unit tests with hand-computed toy cases.
+- viz/plots.py: reliability diagrams with Wilson error bars and log-scale
+  bin-count strips, validated palette.
+- marketlens calibrate: snapshots at 7d and 24h before close
+  (point-in-time, no lookahead), Kalshi no-trade candles use bid/ask mid
+  only when spread <= 0.20. Writes reports/calibration_tables.md +
+  4 figures. Narrative in reports/results.md (hand-authored, never
+  overwritten by the tool).
+
+Findings (details in results.md):
+- Both platforms very well calibrated: 24h reliability 0.0001 (PM),
+  0.0005 (Kalshi).
+- Classic favorite-longshot bias mostly absent; mild significant longshot
+  overpricing on Kalshi only (~0.7 points).
+- Kalshi 0.6 to 0.9 buckets run 4 to 6 points rich (significant); genuine
+  bias vs quote-handling artifact deliberately left open until Phase 5
+  uses bid/ask separately.
+- Clean sharpening 7d -> 24h on paired samples, both platforms.
+- Thin-market miscalibration exists on Kalshi (4x reliability gap thin vs
+  deep tercile) but not on Polymarket above its $1,000 floor.
+
 ## 2026-07-10: Phase 2, cross-platform matching built and run
 
 Done:
