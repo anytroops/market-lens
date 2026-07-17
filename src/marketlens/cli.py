@@ -90,6 +90,26 @@ def match(
 
 
 @app.command()
+def fetch_pair_prices(config: str = "config.yaml") -> None:
+    """Fetch price histories for verified matched pairs that lack them."""
+    cfg, conn = _connect(config)
+    pairs = conn.execute(
+        "SELECT polymarket_id, kalshi_id FROM matches WHERE human_verified = 1"
+    ).fetchall()
+    need = {"polymarket": {p for p, _ in pairs}, "kalshi": {k for _, k in pairs}}
+    for platform in ("polymarket", "kalshi"):
+        have = {r[0] for r in conn.execute(
+            "SELECT DISTINCT market_id FROM prices WHERE platform = ?", (platform,))}
+        missing = sorted(need[platform] - have)
+        typer.echo(f"{platform}: {len(missing)} verified-pair markets need prices")
+        if platform == "polymarket":
+            runner.ingest_polymarket_prices(cfg, conn, market_ids=missing)
+        else:
+            runner.ingest_kalshi_prices(cfg, conn, market_ids=missing)
+    conn.close()
+
+
+@app.command()
 def calibrate(
     out: str = "reports/calibration_tables.md",
     config: str = "config.yaml",
@@ -108,6 +128,74 @@ def calibrate(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(section)
     typer.echo(f"wrote {out_path}")
+
+
+@app.command()
+def diverge(
+    out_csv: str = "reports/divergence_pairs.csv",
+    out_md: str = "reports/divergence_tables.md",
+    config: str = "config.yaml",
+) -> None:
+    """Divergence analysis over verified matched pairs (Phase 4)."""
+    import json as _json
+
+    from marketlens.analysis import divergence as dv
+    from marketlens.analysis.divergence_report import (
+        aggregate_summary, build_pair_table, load_daily_prices)
+    from marketlens.viz import plots
+
+    cfg, conn = _connect(config)
+    table = build_pair_table(conn)
+    if table.empty:
+        typer.echo("no pairs with overlapping prices; run fetch-pair-prices first")
+        raise typer.Exit(1)
+
+    csv_table = table.copy()
+    csv_table["half_lives"] = csv_table["half_lives"].map(_json.dumps)
+    csv_table.sort_values("mean_abs", ascending=False).to_csv(
+        cfg.root / out_csv, index=False)
+
+    agg = aggregate_summary(table)
+    agg_nb = aggregate_summary(table[table["basis_risk"] == 0])
+    fig_dir = cfg.root / "reports" / "figures"
+    plots.spread_distribution(
+        table["mean_abs"].tolist(),
+        f"Cross-platform divergence, {agg['pairs']:,} verified pairs",
+        fig_dir / "spread_distribution.png")
+
+    # Case studies: long-overlap, liquid, interesting pairs, diverse categories.
+    cs = table[(table["n_days"] >= 10) & (table["max_abs"] >= 6)]
+    cs = cs.sort_values("volume", ascending=False)
+    picked, seen_cat = [], set()
+    for _, row in cs.iterrows():
+        if row["category"] in seen_cat and len(seen_cat) < 3:
+            continue
+        picked.append(row)
+        seen_cat.add(row["category"])
+        if len(picked) == 5:
+            break
+    pm_prices = load_daily_prices(conn, "polymarket", {r["pm_id"] for r in picked})
+    k_prices = load_daily_prices(conn, "kalshi", {r["kalshi_id"] for r in picked})
+    for i, row in enumerate(picked, 1):
+        df = dv.align_pair(pm_prices[row["pm_id"]], k_prices[row["kalshi_id"]],
+                           row["orientation"] or "same")
+        ann = (f"mean |spread| {row['mean_abs']:.1f} pts, max {row['max_abs']:.1f}, "
+               f"{row['n_days']} common days, category {row['category']}"
+               + (", basis-risk pair" if row["basis_risk"] else ""))
+        plots.pair_case_study(df, row["pm_title"], row["k_title"], ann,
+                              fig_dir / f"case_study_{i}.png")
+
+    lines = ["# Divergence Tables (generated)", ""]
+    lines.append("| Metric | All verified pairs | Excluding basis risk |")
+    lines.append("|---|---|---|")
+    for key in agg:
+        lines.append(f"| {key} | {agg[key]} | {agg_nb[key]} |")
+    lines.append("")
+    lines.append("Per-pair detail in divergence_pairs.csv; case studies in figures/.")
+    (cfg.root / out_md).write_text("\n".join(lines))
+    conn.close()
+    typer.echo(f"pairs analyzed: {agg['pairs']}, wrote {out_csv}, {out_md}, "
+               f"{len(picked)} case studies")
 
 
 @app.command()

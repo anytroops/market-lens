@@ -31,6 +31,52 @@ def _style_axes(ax):
     ax.set_axisbelow(True)
 
 
+def spread_distribution(mean_abs: list[float], title: str, path: Path) -> None:
+    """Histogram of per-pair mean absolute spreads in probability points."""
+    fig, ax = plt.subplots(figsize=(6.4, 4))
+    ax.hist(mean_abs, bins=40, color=PALETTE["polymarket"], alpha=0.8)
+    ax.set_xlabel("Mean |spread| per pair (probability points)", fontsize=10,
+                  color=INK)
+    ax.set_ylabel("Pairs", fontsize=10, color=INK)
+    ax.set_title(title, fontsize=12, color=INK, loc="left")
+    _style_axes(ax)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
+def pair_case_study(df, pm_title: str, k_title: str, annotation: str,
+                    path: Path) -> None:
+    """Overlaid daily price series for one matched pair plus spread strip."""
+    fig, (ax, axs) = plt.subplots(
+        2, 1, figsize=(7.6, 5.6), height_ratios=[3, 1], sharex=True,
+        gridspec_kw={"hspace": 0.1})
+    x = list(df.index)
+    ax.plot(x, df["pm"], color=PALETTE["polymarket"], linewidth=2,
+            label="Polymarket")
+    ax.plot(x, df["kalshi"], color=PALETTE["kalshi"], linewidth=2,
+            label="Kalshi")
+    ax.set_ylim(0, 1)
+    ax.set_ylabel("Implied probability", fontsize=10, color=INK)
+    ax.legend(frameon=False, fontsize=9, loc="best")
+    title = pm_title if len(pm_title) < 70 else pm_title[:67] + "..."
+    ax.set_title(title, fontsize=11, color=INK, loc="left", pad=14)
+    ax.text(0, 1.02, annotation, transform=ax.transAxes, fontsize=8,
+            color=MUTED)
+    _style_axes(ax)
+
+    axs.fill_between(x, df["spread"], 0, color=PALETTE["polymarket"],
+                     alpha=0.35, linewidth=0)
+    axs.axhline(0, color=MUTED, linewidth=0.8)
+    axs.set_ylabel("Spread (pts)", fontsize=8, color=MUTED)
+    _style_axes(axs)
+    fig.autofmt_xdate(rotation=30)
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
 def reliability_diagram(table: list[CalibrationBin], title: str,
                         subtitle: str, color: str, path: Path) -> None:
     """Reliability diagram with Wilson CIs plus a bin-count strip."""

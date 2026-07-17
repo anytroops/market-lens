@@ -18,6 +18,8 @@ import random
 import sqlite3
 from collections import Counter
 
+import httpx
+
 from marketlens.config import Config
 from marketlens.db import loaders
 from marketlens.ingest import kalshi as km
@@ -136,11 +138,15 @@ def _sampled_headline_ids(cfg: Config, conn: sqlite3.Connection,
 
 
 def ingest_polymarket_prices(cfg: Config, conn: sqlite3.Connection,
-                             max_markets: int | None = None) -> Counter:
+                             max_markets: int | None = None,
+                             market_ids: list[str] | None = None) -> Counter:
+    """Fetch daily price histories. market_ids overrides the random sample
+    (used to price specific verified matched pairs on demand)."""
     client = pm.PolymarketClient(cfg)
     stats: Counter = Counter()
     try:
-        sample = _sampled_headline_ids(cfg, conn, pm.PLATFORM)
+        sample = (sorted(market_ids) if market_ids is not None
+                  else _sampled_headline_ids(cfg, conn, pm.PLATFORM))
         if max_markets:
             sample = sample[:max_markets]
         done = loaders.markets_with_prices(conn, pm.PLATFORM)
@@ -155,7 +161,14 @@ def ingest_polymarket_prices(cfg: Config, conn: sqlite3.Connection,
             if not token:
                 stats["no_token"] += 1
                 continue
-            history = client.fetch_price_history(token)
+            try:
+                history = client.fetch_price_history(token)
+            except (httpx.HTTPStatusError, RuntimeError) as e:
+                # Individual markets can vanish upstream; skip, never crash
+                # a long run over one market.
+                log.warning("price fetch failed for %s: %s", market_id, e)
+                stats["fetch_failed"] += 1
+                continue
             rows = pm.parse_price_history(history, market_id)
             if rows:
                 loaders.upsert_prices(conn, rows)
@@ -172,11 +185,15 @@ def ingest_polymarket_prices(cfg: Config, conn: sqlite3.Connection,
 
 
 def ingest_kalshi_prices(cfg: Config, conn: sqlite3.Connection,
-                         max_markets: int | None = None) -> Counter:
+                         max_markets: int | None = None,
+                         market_ids: list[str] | None = None) -> Counter:
+    """Fetch daily candlesticks. market_ids overrides the random sample
+    (used to price specific verified matched pairs on demand)."""
     client = km.KalshiClient(cfg)
     stats: Counter = Counter()
     try:
-        sample = _sampled_headline_ids(cfg, conn, km.PLATFORM)
+        sample = (sorted(market_ids) if market_ids is not None
+                  else _sampled_headline_ids(cfg, conn, km.PLATFORM))
         if max_markets:
             sample = sample[:max_markets]
         done = loaders.markets_with_prices(conn, km.PLATFORM)
@@ -192,10 +209,17 @@ def ingest_kalshi_prices(cfg: Config, conn: sqlite3.Connection,
             if not open_ts or not close_ts:
                 stats["missing_window"] += 1
                 continue
-            candles = client.fetch_candlesticks(
-                km.series_ticker_of(raw), market_id,
-                _iso_to_epoch(open_ts), _iso_to_epoch(close_ts),
-            )
+            try:
+                candles = client.fetch_candlesticks(
+                    km.series_ticker_of(raw), market_id,
+                    _iso_to_epoch(open_ts), _iso_to_epoch(close_ts),
+                )
+            except (httpx.HTTPStatusError, RuntimeError) as e:
+                # Kalshi purges markets on a rolling basis; a market verified
+                # last week can 404 today. Count it and move on.
+                log.warning("candlesticks failed for %s: %s", market_id, e)
+                stats["fetch_failed"] += 1
+                continue
             rows = km.parse_candlesticks({"candlesticks": candles}, market_id)
             if rows:
                 loaders.upsert_prices(conn, rows)
