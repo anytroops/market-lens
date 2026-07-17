@@ -1,5 +1,18 @@
 # Worklog
 
+## 2026-07-10: Match verification pass (delegated to Claude by Sean)
+
+- All 3,087 candidates at score 85+ verified against full descriptions
+  and Kalshi rules text: class-level audits for template families plus
+  individual reads for all 431 non-template pairs, then machine subject
+  and fixture checks on every accepted pair.
+- Result: 2,617 verified pairs in matches (orientation and basis_risk
+  columns added), 469 rejected, 1 unresolved. 16 of 19 both-priced pairs
+  usable. Codes and verified_by stamp written into
+  reports/match_candidates.csv; engine in scripts/apply_verification.py.
+- Independence caveat recorded in reports/matching.md; Sean asked to
+  spot-check ~20 random verified rows as an audit when convenient.
+
 ## 2026-07-10: Phase 3, calibration analysis complete
 
 Done:

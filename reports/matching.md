@@ -98,6 +98,45 @@ sampled price histories (`both_have_prices = 1`), then score 85+ sorted by
 volume. Price histories for verified pairs that lack them are fetched on
 demand in Phase 4 (ingestion is resumable by design).
 
+## Verification pass (2026-07-10, performed by Claude at Sean's request)
+
+Sean delegated the verification. Method, designed to be an audit rather
+than a skim:
+
+1. Every candidate at score 85+ (3,087 pairs) was joined back to both
+   markets' FULL stored records: Polymarket description text, Kalshi
+   rules_primary text, outcome names, and Kalshi yes_sub_title.
+2. Pairs cluster into template classes by Kalshi series (KXWCGOAL,
+   KXPGATOP10, nominee markets, ...). Each class was audited by reading
+   its rules text on samples; every pair OUTSIDE the big template classes
+   (431 pairs) was read individually.
+3. Class verdicts were encoded in scripts/apply_verification.py together
+   with two per-pair machine checks applied to every accepted pair: a
+   SUBJECT check (the Kalshi subtitle entity must appear in the
+   Polymarket title or outcome names; catches same-template
+   different-person pairs) and a FIXTURE check for generic-title game
+   markets (team names from Kalshi's rules text must appear on the
+   Polymarket side). Leg orientation is derived from outcome names vs
+   the Kalshi subtitle. scripts/build_verification_sheet.py rebuilds the
+   review sheet from the database.
+
+Outcome: 2,617 verified (2,353 same-orientation, 208 inverse, 56 basis
+risk), 469 rejected, 1 unresolvable. Of the 19 pairs where both sides
+already have sampled price histories, 16 verified usable. Notable
+whole-class rejections beyond the earlier examples: Kalshi's Eurovision
+overall/jury series matched Polymarket's jury/overall markets crosswise
+(both rejected), "reach the Round of 16" vs "eliminated IN the Round of
+16", per-game player goals vs per-tournament goals, NHL/NBA series
+lengths that matched esports "Games Total" titles, and CPI "exactly
+0.5%" vs "above 0.5%".
+
+**Independence caveat:** the matcher's author (Claude) also verified its
+output. The audit trail exists precisely so this is checkable: Sean
+should spot-check roughly 20 random rows of match_candidates.csv (filter
+verified in {1, inv, br}) against the live market pages. Rejections are
+cheap to double-check too since every `0` row keeps its titles side by
+side.
+
 ## Honest limitations
 
 - My own labels tuned the guards AND estimated the precision above, so the
