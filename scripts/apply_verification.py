@@ -122,6 +122,17 @@ def decide(p):
     orient = orient_from_subtitle(outcomes, p["pm_leg"], sub)
 
     code = None
+    # Metric-word checks added 2026-07-17 after price data exposed two
+    # verification misses: a PM "2+ shots" market had matched the assists
+    # series, and the SpaceX pair title said June while Kalshi's series is
+    # the full-year count (48 point persistent spread confirmed different
+    # propositions; title/rules conflict makes resolution ambiguous).
+    if series == "KXWCGOAL" and "goal" not in pm_title.lower():
+        return "0", ""
+    if series == "KXWCAST" and "assist" not in pm_title.lower():
+        return "0", ""
+    if series == "KXSPACEXCOUNT":
+        return "0", ""
     if series == "KXWCUSAOPPONENT":
         # PM "USA reach R16" vs K "USA not make R16" is a valid inverse;
         # every other pair in the series is reach-vs-matchup, rejected.

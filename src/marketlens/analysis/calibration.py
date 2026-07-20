@@ -126,6 +126,27 @@ def calibration_table(probs: np.ndarray, outcomes: np.ndarray,
     return out
 
 
+def strip_placeholder_prefix(ts: np.ndarray, prices: np.ndarray,
+                             placeholder: float = 0.5
+                             ) -> tuple[np.ndarray, np.ndarray]:
+    """Drop the leading run of exact placeholder prices from a series.
+
+    Polymarket's prices-history seeds markets at exactly 0.5 until the
+    first CLOB trade; a never-traded market is a flat 0.5 forever
+    (discovered in Phase 4: identical longshot pairs showed 45 point
+    spreads because one side was all placeholder). Sorting by timestamp,
+    values equal to the placeholder before the first differing price are
+    removed; interior crossings through 0.5 survive.
+    """
+    order = np.argsort(ts)
+    ts, prices = np.asarray(ts)[order], np.asarray(prices)[order]
+    keep = prices != placeholder
+    if not keep.any():
+        return ts[:0], prices[:0]
+    first_real = int(np.argmax(keep))
+    return ts[first_real:], prices[first_real:]
+
+
 def price_at_horizon(ts: np.ndarray, prices: np.ndarray,
                      anchor_ts: int, horizon_seconds: int) -> float | None:
     """Last observed price at or before (anchor - horizon).

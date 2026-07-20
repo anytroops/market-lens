@@ -67,6 +67,10 @@ def load_snapshots(conn: sqlite3.Connection, platform: str) -> dict:
         points.sort()
         ts = np.array([p[0] for p in points])
         px = np.array([p[1] for p in points])
+        if platform == "polymarket":
+            ts, px = cal.strip_placeholder_prefix(ts, px)
+        if len(ts) == 0:
+            continue
         for name, seconds in HORIZONS.items():
             p = cal.price_at_horizon(ts, px, anchor, seconds)
             if p is None:

@@ -54,6 +54,21 @@ is, why it exists, and what it affects.
   (average $53k), return zero points from the CLOB prices-history endpoint.
   Verified live on individual high-volume markets.
 
+## Price data artifacts (discovered 2026-07-17, Phase 4)
+
+- **Polymarket seeds price history at exactly 0.5 before the first CLOB
+  trade.** A never-traded market reports a flat 0.500 series that looks
+  like a real price. Discovered when identical longshot pairs showed 45
+  point spreads against Kalshi's genuine 3 to 5 cent quotes. All analyses
+  now strip each market's leading run of exact 0.5 values (interior
+  crossings survive); 1,080 of 17,078 priced Polymarket markets were pure
+  placeholder and drop out entirely. Phase 3 numbers were regenerated
+  after this fix; the correction note in results.md states what moved.
+- **Kalshi's purge is rolling, not one-time.** 248 of 2,451 Kalshi
+  markets in verified pairs (10%) returned 404 one week after they were
+  matched and verified. Fetch price histories for matched pairs promptly
+  after matching; anything deferred may be gone.
+
 ## Statistical dependence
 
 - **Multi-outcome events create dependent rows.** A "who wins the

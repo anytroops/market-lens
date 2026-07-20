@@ -78,6 +78,30 @@ class TestCalibrationTable:
         assert table[0].lo == pytest.approx(0.9)
 
 
+class TestStripPlaceholderPrefix:
+    def test_leading_run_dropped(self):
+        ts = np.array([1, 2, 3, 4])
+        px = np.array([0.5, 0.5, 0.6, 0.5])
+        t2, p2 = cal.strip_placeholder_prefix(ts, px)
+        assert list(t2) == [3, 4]
+        assert list(p2) == [0.6, 0.5]  # interior 0.5 survives
+
+    def test_all_placeholder_series_becomes_empty(self):
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([1, 2]), np.array([0.5, 0.5]))
+        assert len(t2) == 0 and len(p2) == 0
+
+    def test_unsorted_input(self):
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([3, 1, 2]), np.array([0.7, 0.5, 0.5]))
+        assert list(t2) == [3] and list(p2) == [0.7]
+
+    def test_no_placeholder(self):
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([1, 2]), np.array([0.3, 0.4]))
+        assert len(t2) == 2
+
+
 class TestPriceAtHorizon:
     TS = np.array([100, 200, 300])
     PX = np.array([0.1, 0.2, 0.3])

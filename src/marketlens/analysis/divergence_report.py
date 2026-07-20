@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from marketlens.analysis import divergence as dv
+from marketlens.analysis.calibration import strip_placeholder_prefix
 
 log = logging.getLogger(__name__)
 
@@ -40,9 +41,14 @@ def load_daily_prices(conn: sqlite3.Connection, platform: str,
     out = {}
     for mid, points in series.items():
         points.sort()
-        out[mid] = dv.daily_series(
-            np.array([p[0] for p in points]),
-            np.array([p[1] for p in points]))
+        ts = np.array([p[0] for p in points])
+        px = np.array([p[1] for p in points])
+        if platform == "polymarket":
+            # Drop the pre-first-trade placeholder era (exact 0.5 seeds).
+            ts, px = strip_placeholder_prefix(ts, px)
+        if len(ts) == 0:
+            continue
+        out[mid] = dv.daily_series(ts, px)
     return out
 
 
