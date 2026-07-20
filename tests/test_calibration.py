@@ -81,10 +81,10 @@ class TestCalibrationTable:
 class TestStripPlaceholderPrefix:
     def test_leading_run_dropped(self):
         ts = np.array([1, 2, 3, 4])
-        px = np.array([0.5, 0.5, 0.6, 0.5])
+        px = np.array([0.5, 0.5, 0.6, 0.55])
         t2, p2 = cal.strip_placeholder_prefix(ts, px)
         assert list(t2) == [3, 4]
-        assert list(p2) == [0.6, 0.5]  # interior 0.5 survives
+        assert list(p2) == [0.6, 0.55]
 
     def test_all_placeholder_series_becomes_empty(self):
         t2, p2 = cal.strip_placeholder_prefix(
@@ -100,6 +100,22 @@ class TestStripPlaceholderPrefix:
         t2, p2 = cal.strip_placeholder_prefix(
             np.array([1, 2]), np.array([0.3, 0.4]))
         assert len(t2) == 2
+
+    def test_interior_spike_dropped(self):
+        # The Michael Kim case: a one-day 0.5 between sub-cent prices.
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([1, 2, 3, 4]), np.array([0.004, 0.5, 0.002, 0.005]))
+        assert list(p2) == [0.004, 0.002, 0.005]
+
+    def test_genuine_half_amid_moneyline_survives(self):
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([1, 2, 3]), np.array([0.48, 0.5, 0.52]))
+        assert list(p2) == [0.48, 0.5, 0.52]
+
+    def test_trailing_spike_dropped(self):
+        t2, p2 = cal.strip_placeholder_prefix(
+            np.array([1, 2]), np.array([0.9, 0.5]))
+        assert list(p2) == [0.9]
 
 
 class TestPriceAtHorizon:

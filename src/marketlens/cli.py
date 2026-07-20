@@ -199,6 +199,45 @@ def diverge(
 
 
 @app.command()
+def backtest(
+    out_md: str = "reports/backtest_tables.md",
+    out_csv: str = "reports/backtest_trades.csv",
+    config: str = "config.yaml",
+) -> None:
+    """Fee-adjusted arbitrage backtest with slippage sensitivity (Phase 5)."""
+    from marketlens.analysis.backtest_report import run_backtest, summarize
+
+    cfg, conn = _connect(config)
+    lines = ["# Backtest Tables (generated)", "",
+             "Entry: first day a pair's combined cost of $1 guaranteed",
+             "payout, including both fees and the stated Polymarket",
+             "slippage, drops below $1. Hold to resolution.", "",
+             "| Slippage (pts) | Tradable pairs | Opportunities | % of pairs | "
+             "Mean edge (c) | Median days held | Median annualized % | "
+             "Realized = theoretical? |", "|---|---|---|---|---|---|---|---|"]
+    base_trades = None
+    for slip in (0.0, 1.0, 2.0, 3.0):
+        trades = run_backtest(conn, slip)
+        s = summarize(trades, trades.attrs["n_tradable"])
+        if slip == 1.0:
+            base_trades = trades
+        ok = (f"{s.get('trades_paying_exactly_1', 0)}/{s.get('opportunities', 0)}"
+              if s.get("opportunities") else "n/a")
+        lines.append(
+            f"| {slip:g} | {s['tradable_pairs']} | {s.get('opportunities', 0)} | "
+            f"{s.get('pct_of_pairs', 0)} | {s.get('mean_edge_cents', 'n/a')} | "
+            f"{s.get('median_days_held', 'n/a')} | "
+            f"{s.get('median_annualized_pct', 'n/a')} | {ok} |")
+    if base_trades is not None and not base_trades.empty:
+        base_trades.sort_values("edge", ascending=False).to_csv(
+            cfg.root / out_csv, index=False)
+        lines += ["", "Trade detail (1pt slippage case) in backtest_trades.csv."]
+    (cfg.root / out_md).write_text("\n".join(lines))
+    conn.close()
+    typer.echo(f"wrote {out_md}")
+
+
+@app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
     config: str = "config.yaml",

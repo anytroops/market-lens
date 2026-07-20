@@ -127,16 +127,22 @@ def calibration_table(probs: np.ndarray, outcomes: np.ndarray,
 
 
 def strip_placeholder_prefix(ts: np.ndarray, prices: np.ndarray,
-                             placeholder: float = 0.5
+                             placeholder: float = 0.5,
+                             spike_tolerance: float = 0.05
                              ) -> tuple[np.ndarray, np.ndarray]:
-    """Drop the leading run of exact placeholder prices from a series.
+    """Remove Polymarket's exact-0.5 placeholder artifacts from a series.
 
-    Polymarket's prices-history seeds markets at exactly 0.5 until the
-    first CLOB trade; a never-traded market is a flat 0.5 forever
-    (discovered in Phase 4: identical longshot pairs showed 45 point
-    spreads because one side was all placeholder). Sorting by timestamp,
-    values equal to the placeholder before the first differing price are
-    removed; interior crossings through 0.5 survive.
+    The prices-history endpoint emits exactly 0.5 (a) before the first
+    CLOB trade, so never-traded markets are flat 0.5 forever, and (b) as
+    isolated interior points on gap days (discovered when a 0.3 cent golf
+    longshot printed a one-day 0.5 "price" and manufactured a 47 cent
+    fake arbitrage). Rules, applied on the time-sorted series:
+
+    1. Drop the leading run of exact placeholders.
+    2. Drop any remaining exact placeholder whose surviving neighbors are
+       all farther than spike_tolerance from 0.5. A genuine trade at
+       0.50 sits amid nearby prices (sports moneylines) and survives;
+       a placeholder spike between 0.003 and 0.002 does not.
     """
     order = np.argsort(ts)
     ts, prices = np.asarray(ts)[order], np.asarray(prices)[order]
@@ -144,7 +150,29 @@ def strip_placeholder_prefix(ts: np.ndarray, prices: np.ndarray,
     if not keep.any():
         return ts[:0], prices[:0]
     first_real = int(np.argmax(keep))
-    return ts[first_real:], prices[first_real:]
+    ts, prices = ts[first_real:], prices[first_real:]
+
+    # Placeholder points are not always exactly 0.5: on no-trade days the
+    # endpoint emits the book midpoint, and an empty or one-sided book
+    # midpoints NEAR 0.5 (0.4985 observed). Treat anything within 1.5
+    # cents of 0.5 as a potential placeholder.
+    is_ph = np.abs(prices - placeholder) <= 0.015
+    if not is_ph.any():
+        return ts, prices
+    real_prices = prices[~is_ph]
+    real_pos = np.flatnonzero(~is_ph)
+    keep_mask = np.ones(len(prices), dtype=bool)
+    for i in np.flatnonzero(is_ph):
+        j = np.searchsorted(real_pos, i)
+        neighbors = []
+        if j > 0:
+            neighbors.append(real_prices[j - 1])
+        if j < len(real_prices):
+            neighbors.append(real_prices[j])
+        if neighbors and all(abs(v - prices[i]) > spike_tolerance
+                             for v in neighbors):
+            keep_mask[i] = False
+    return ts[keep_mask], prices[keep_mask]
 
 
 def price_at_horizon(ts: np.ndarray, prices: np.ndarray,
