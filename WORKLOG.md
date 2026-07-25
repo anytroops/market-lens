@@ -1,5 +1,44 @@
 # Worklog
 
+## 2026-07-25: Phases 4 to 6 complete, all spec deliverables shipped
+
+Done:
+- Phase 4 divergence: 2,095 pairs, 50,276 pair-days, mean absolute
+  spread 4.2 points, 3,641 divergence events with median half-life 1
+  day, lead-lag showing Kalshi ahead by about a day (0.059 vs 0.000),
+  5 case-study charts.
+- Phase 5 backtest: entry rule with both taker fee schedules, Kalshi at
+  closing bid/ask, Polymarket slippage swept 0 to 3 points. 919 of 2,144
+  tradable pairs qualify at 1 point, opportunities falling 39% across
+  the sweep. 913 of 919 trades paid exactly $1, and the 6 that did not
+  are reported as an outcome-based precision estimate.
+- Phase 6 prediction: nothing beats the price (t = 0.08). The first run
+  DID at t = 5.30, entirely via a lifetime-volume feature that is only
+  knowable after resolution. Caught by per-feature ablation, removed,
+  documented as the phase's main lesson.
+- Deliverables: README.md, INTERVIEW_PREP.md, FUTURE.md,
+  marketlens run-all (verified end to end in 6.5 minutes offline),
+  129 tests green, all 6 example SQL queries verified to execute.
+
+Corrections made along the way:
+- Polymarket seeds price history near 0.50 before a market's first trade
+  and on no-trade days. This manufactured 47 cent fake arbitrages on
+  golf longshots really priced at 0.3 cents. Cleaner plus a 25-point
+  jump guard cut apparent opportunities from 65% of pairs to 43%.
+- Two verified pairs were wrong (goals vs assists, SpaceX June vs
+  full-year) and were caught by price data, not by text review.
+- An unsupported claim in the Phase 3 write-up (that the backtest
+  supported the "Kalshi YES is rich" reading) was checked and reversed:
+  66% of trades buy Kalshi YES, which argues the other way.
+- Regenerating data_quality.md had been silently dropping its
+  hand-written notes; the notes now live in the generator.
+
+Open for Sean:
+- Spot-check roughly 20 random verified pairs in match_candidates.csv
+  against the live market pages, since the matcher's author also did the
+  verification. The 0.7% payout-mismatch rate is the current best
+  independent estimate of that set's precision.
+
 ## 2026-07-10: Match verification pass (delegated to Claude by Sean)
 
 - All 3,087 candidates at score 85+ verified against full descriptions

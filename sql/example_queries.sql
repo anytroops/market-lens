@@ -1,5 +1,7 @@
 -- Analytical queries used by market-lens. These back the data quality report
--- and later analysis phases; kept here as first-class SQL artifacts.
+-- and later analysis phases, kept here as first-class SQL artifacts.
+-- Statement separators appear only at the end of statements, never inside
+-- a comment, so tooling can split this file safely.
 -- Conventions: markets.*_ts are ISO 8601 UTC text, prices.ts is unix seconds,
 -- prices are probabilities in [0, 1].
 
