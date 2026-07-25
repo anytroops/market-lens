@@ -182,5 +182,4 @@ terciles) in [sql/example_queries.sql](sql/example_queries.sql).
 | `reports/` | Findings, generated tables, figures, verification CSVs |
 | `LIMITATIONS.md` | Every caveat found, maintained continuously |
 | `FUTURE.md` | Scoped-out work and why |
-| `INTERVIEW_PREP.md` | Q&A grounded in the project's own numbers |
 | `WORKLOG.md` | Decision log |
