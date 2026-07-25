@@ -89,6 +89,40 @@ def build_pair_table(conn: sqlite3.Connection) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def lead_lag_summary(conn: sqlite3.Connection, min_days: int = 20,
+                     max_lag: int = 2) -> dict:
+    """Pooled lead-lag correlation of daily price changes across pairs.
+
+    Positive lag k means a Polymarket move today lines up with a Kalshi
+    move k days LATER (Polymarket leads). Only pairs with a reasonable
+    number of common days contribute, and correlations are averaged
+    across pairs so one long pair cannot dominate.
+    """
+    pairs = conn.execute(
+        """SELECT polymarket_id, kalshi_id, orientation FROM matches
+           WHERE human_verified = 1""").fetchall()
+    pm_prices = load_daily_prices(conn, "polymarket", {p[0] for p in pairs})
+    k_prices = load_daily_prices(conn, "kalshi", {p[1] for p in pairs})
+    per_lag: dict[int, list[float]] = {l: [] for l in range(-max_lag, max_lag + 1)}
+    n_pairs = 0
+    for pm_id, k_id, orientation in pairs:
+        pm_s, k_s = pm_prices.get(pm_id), k_prices.get(k_id)
+        if pm_s is None or k_s is None:
+            continue
+        df = dv.align_pair(pm_s, k_s, orientation or "same")
+        if len(df) < min_days:
+            continue
+        n_pairs += 1
+        for lag, corr in dv.lead_lag_correlation(df, max_lag).items():
+            if not np.isnan(corr):
+                per_lag[lag].append(corr)
+    return {
+        "pairs": n_pairs,
+        "mean_corr_by_lag": {l: (float(np.mean(v)) if v else None)
+                             for l, v in per_lag.items()},
+    }
+
+
 def aggregate_summary(table: pd.DataFrame) -> dict:
     """Headline numbers across pairs, weighting each pair-day equally."""
     total_days = int(table["n_days"].sum())

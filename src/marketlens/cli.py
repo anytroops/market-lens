@@ -141,7 +141,8 @@ def diverge(
 
     from marketlens.analysis import divergence as dv
     from marketlens.analysis.divergence_report import (
-        aggregate_summary, build_pair_table, load_daily_prices)
+        aggregate_summary, build_pair_table, lead_lag_summary,
+        load_daily_prices)
     from marketlens.viz import plots
 
     cfg, conn = _connect(config)
@@ -190,6 +191,19 @@ def diverge(
     lines.append("|---|---|---|")
     for key in agg:
         lines.append(f"| {key} | {agg[key]} | {agg_nb[key]} |")
+    lines.append("")
+    ll = lead_lag_summary(conn)
+    lines.append(f"## Lead-lag ({ll['pairs']} pairs with 20+ common days)")
+    lines.append("")
+    lines.append("Mean correlation of daily price CHANGES. Positive lag means")
+    lines.append("a Polymarket move lines up with a Kalshi move that many days")
+    lines.append("later, i.e. Polymarket leads.")
+    lines.append("")
+    lines.append("| Lag (days) | Mean correlation |")
+    lines.append("|---|---|")
+    for lag, corr in sorted(ll["mean_corr_by_lag"].items()):
+        lines.append(f"| {lag:+d} | {corr:.4f} |" if corr is not None
+                     else f"| {lag:+d} | n/a |")
     lines.append("")
     lines.append("Per-pair detail in divergence_pairs.csv; case studies in figures/.")
     (cfg.root / out_md).write_text("\n".join(lines))
