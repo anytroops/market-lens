@@ -58,9 +58,13 @@ Polymarket shows no comparable pattern. Two candidate explanations,
 deliberately left open: a genuine tendency of Kalshi buyers to overpay
 for likely-but-uncertain outcomes, or a residue of our quote handling,
 since Kalshi days without trades contribute a bid/ask midpoint. Phase 5
-uses bid and ask separately and finds real (if thin) edges buying the NO
-side of Kalshi favorites, which is weak evidence for the first
-explanation.
+does not settle it. That backtest uses bid and ask separately, so if
+Kalshi's YES side were systematically rich, its trades should have
+skewed toward buying Kalshi NO. They skew the other way (34% buy Kalshi
+NO, 66% buy Kalshi YES), so the arbitrage evidence points away from a
+simple "Kalshi YES is overpriced" story. Distinguishing the two
+explanations properly needs trade-only prices with no midpoint
+substitution, which is listed in FUTURE.md.
 
 ### 4. Markets sharpen as resolution approaches, cleanly
 
@@ -204,7 +208,7 @@ and the residual gaps that survive an honest fee model live in exactly
 the places where execution is least trustworthy.** That is a market
 efficiency finding, and it is what the data supports.
 
-### 6 trades that did not pay $1
+### Six trades that did not pay $1
 
 Six of 919 trades paid $0 or $2 instead of $1, meaning the two markets
 resolved inconsistently. These are the residual verification errors that
@@ -215,3 +219,69 @@ England win?" cricket market matched to a football World Cup group. They are
 reported rather than removed. At 0.7% of trades, they also serve as an
 outcome-based precision estimate for the verified pair set, which is
 stricter than any text-similarity measure.
+
+## Phase 6: Does anything beat the market price?
+
+Question: does a simple model with extra features predict resolution
+better than the price alone? Setup: logistic regression on **logit(price)**
+plus price momentum over the trailing 7 days, days of market lifetime,
+category dummies, and platform. Using log-odds rather than raw price
+matters: logistic regression is linear in log-odds, so a fitted
+coefficient of exactly 1.0 with intercept 0 reproduces the market price
+exactly. The coefficients therefore read directly as "how much does the
+market need correcting". Temporal split: train on 17,953 markets
+resolving through 2026-06-13, test on the 7,695 that resolved after.
+
+### The answer is no, and the way we got there is the interesting part
+
+| Model | Log loss | Brier |
+|---|---|---|
+| Market price alone | 0.3600 | 0.1166 |
+| Recalibrated price (fitted slope and intercept) | 0.3598 | 0.1165 |
+| Logistic regression with all features | 0.3598 | 0.1166 |
+| Always predict the base rate (0.253) | 0.5651 | n/a |
+
+The features add a log-loss gain of 0.00003 with a paired t statistic of
+**0.08**: indistinguishable from zero. Recalibrating the price alone adds
+0.00019 (t = 0.66), also not significant, which independently confirms
+the Phase 3 finding that these prices need no calibration adjustment. The
+fitted coefficient on logit(price) is 1.05, statistically a hair above
+the 1.0 that would mean "use the market price unchanged".
+
+For scale, the market price cuts log loss from 0.565 (knowing only the
+base rate) to 0.360. The price does essentially all of the work available,
+and nothing simple improves on it.
+
+### The lookahead bug that first said otherwise
+
+The initial run of this model DID beat the market: log-loss gain 0.00338
+with t = 5.30, apparently significant. Rather than reporting it, we asked
+which single feature carried the gain. Ablating one feature group at a
+time showed the answer was volume, alone, contributing 0.00306 of the
+0.00338 (t = 6.14) while categories, momentum, and platform contributed
+nothing.
+
+That was the tell. The volume field in our schema is each market's
+**lifetime** volume as recorded at ingestion, which is after the market
+resolved. It is not knowable at the 24-hour snapshot. Markets that resolve
+YES in dramatic fashion attract heavy late volume, so the model was
+reading the future through a field that looked innocuous. Removing the
+feature collapses the gain from t = 5.30 to t = 0.08.
+
+This is textbook lookahead bias, and it is worth stating plainly because
+it is the exact failure mode that makes backtests look profitable when
+they are not. The defense that caught it was not a code review; it was
+insisting that any claimed edge be attributed to a specific feature, and
+then asking whether that feature was truly knowable at decision time. A
+point-in-time volume feature is possible in principle (cumulative volume
+up to the snapshot, which Kalshi's candlesticks support and Polymarket's
+price history does not) and is listed in FUTURE.md rather than bodged in.
+
+### Honest caveats on the statistics
+
+The paired t statistics above treat markets as independent. They are not:
+multi-outcome events contribute several mechanically correlated legs, so
+the true standard errors are wider than reported and the t statistics are
+optimistic. This does not change the conclusion (a t of 0.08 is not
+rescued by wider error bars) but it does mean the earlier t of 5.30 was
+even less credible than it looked.

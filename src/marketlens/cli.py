@@ -252,6 +252,50 @@ def backtest(
 
 
 @app.command()
+def predict(
+    out_md: str = "reports/prediction_tables.md",
+    config: str = "config.yaml",
+) -> None:
+    """Can features beat the market price alone? (Phase 6)"""
+    from marketlens.analysis.prediction_report import run
+
+    cfg, conn = _connect(config)
+    r = run(conn)
+    conn.close()
+    lines = [
+        "# Prediction Tables (generated)", "",
+        "Logistic regression on logit(price) plus extra features, versus",
+        "the market price alone. Temporal split: train on markets",
+        f"resolving through {r['train_end']} (n = {r['n_train']:,}), test on",
+        f"those from {r['test_start']} onward (n = {r['n_test']:,}).", "",
+        "| Model | Log loss | Brier |", "|---|---|---|",
+        f"| Market price alone | {r['baseline_log_loss']:.4f} | {r['baseline_brier']:.4f} |",
+        f"| Recalibrated price only | {r['recal_log_loss']:.4f} | {r['recal_brier']:.4f} |",
+        f"| Logistic + features | {r['model_log_loss']:.4f} | {r['model_brier']:.4f} |",
+        f"| Always base rate ({r['test_base_rate']:.3f}) | "
+        f"{r['always_base_rate_log_loss']:.4f} | n/a |", "",
+        f"Paired log-loss gain over the raw price: **{r['paired_mean_gain']:.5f} "
+        f"+/- {r['paired_std_error']:.5f}** (t = {r['paired_t_stat']:.2f}). "
+        "Compared on the same test markets, so which markets happened to be "
+        "easy cannot explain the difference.", "",
+        "Decomposing that gain:", "",
+        f"- Recalibrating the price alone (fitted slope and intercept, no new "
+        f"information): {r['recal_gain']:.5f} (t = {r['recal_t']:.2f})",
+        f"- What the extra features add ON TOP of recalibration: "
+        f"{r['features_gain']:.5f} (t = {r['features_t']:.2f})", "",
+        f"Fitted coefficient on logit(price): **{r['coef_logit_price']:.4f}** "
+        f"(1.0 means the market price is used as-is), intercept "
+        f"{r['intercept']:.4f}.", "",
+        "| Feature | Coefficient |", "|---|---|",
+    ]
+    for name, c in sorted(r["coefficients"].items(), key=lambda kv: -abs(kv[1])):
+        lines.append(f"| {name} | {c:+.4f} |")
+    (cfg.root / out_md).write_text("\n".join(lines))
+    typer.echo(f"baseline log loss {r['baseline_log_loss']:.4f}, "
+               f"model {r['model_log_loss']:.4f}; wrote {out_md}")
+
+
+@app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
     config: str = "config.yaml",
