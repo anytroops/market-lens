@@ -111,22 +111,41 @@ manufactured 47 cent "arbitrage" on golf longshots that were really priced at
 entering on any single-day price jump above 25 points, cut the apparent
 opportunity rate from 65% of pairs to 43%.
 
+## A sixth finding: nothing simple beats the price
+
+A logistic regression on logit(price) plus momentum, category, platform,
+and market age fails to improve on the market price at all (paired
+log-loss gain 0.00003, t = 0.08). Using log-odds matters: a fitted
+coefficient of 1.0 on logit(price) reproduces the market exactly, and the
+fit lands at 1.05.
+
+The first version of that model DID beat the market, at t = 5.30. Ablating
+one feature group at a time showed the entire gain came from volume, and
+the volume field is each market's LIFETIME volume recorded at ingestion,
+which is after resolution. Markets that resolve YES dramatically attract
+heavy late volume, so the model was reading the future through an
+innocuous-looking column. Removing it collapsed the gain to t = 0.08.
+Written up in full in [reports/results.md](reports/results.md), because
+the catch is more instructive than the result.
+
 ## Reproducing
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
 ```
 
-```bash
-.venv/bin/marketlens ingest --platform all --since 2024-07-09
-```
+One command rebuilds every table and figure. Ingestion replays the
+gzipped archive in `data/raw/` rather than the APIs, so a full rerun is
+offline and takes about 6 minutes:
 
 ```bash
-.venv/bin/marketlens match --threshold 60 && .venv/bin/marketlens fetch-pair-prices
+.venv/bin/marketlens run-all --skip-ingest
 ```
 
+To collect the data from scratch instead (several hours, hits both APIs):
+
 ```bash
-.venv/bin/marketlens calibrate && .venv/bin/marketlens diverge && .venv/bin/marketlens backtest
+.venv/bin/marketlens run-all
 ```
 
 ```bash
@@ -154,4 +173,6 @@ terciles) in [sql/example_queries.sql](sql/example_queries.sql).
 | `src/marketlens/analysis/` | Calibration, divergence, backtest |
 | `reports/` | Findings, generated tables, figures, verification CSVs |
 | `LIMITATIONS.md` | Every caveat found, maintained continuously |
+| `FUTURE.md` | Scoped-out work and why |
+| `INTERVIEW_PREP.md` | Q&A grounded in the project's own numbers |
 | `WORKLOG.md` | Decision log |
