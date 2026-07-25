@@ -184,4 +184,36 @@ def render_report(conn: sqlite3.Connection) -> str:
     add("still carry closing bid/ask, so downstream code uses")
     add("COALESCE(price, (bid + ask) / 2.0). Polymarket history has no bid/ask.")
     add("")
+    add(NOTES)
     return "\n".join(lines)
+
+
+# Interpretive notes that travel with the generated tables. These are
+# regenerated with the report so a rerun cannot silently drop them; the
+# full caveat list lives in LIMITATIONS.md.
+NOTES = """## How to read these tables
+
+- **Kalshi's usable window is far shorter than Polymarket's.** The
+  monthly coverage table shows why: Kalshi's trade API purges older
+  settled markets, so despite a 24-month ingestion window its resolved
+  data effectively begins in May 2026. Pre-May rows that survive mostly
+  lack a result and are excluded from the headline set. Cross-platform
+  comparisons inherit this mismatch.
+- **March 2026 is under-covered on Polymarket**, an upstream hole in the
+  Gamma API verified by live re-queries, not an ingestion failure.
+- **A handful of Polymarket markets close before the ingestion window
+  starts.** The frame keys on scheduled end date, but a market that
+  resolves early stops trading at its closedTime, which can precede the
+  window.
+- **A YES share near one third is expected, not a red flag.**
+  Multi-outcome events list one binary leg per candidate and at most one
+  leg resolves YES, which pulls the base rate well below one half. The
+  two platforms landing within a point of each other is a mild sanity
+  check on outcome parsing.
+- **Sports dominates both platforms**, so pooled results are effectively
+  sports-weighted unless reported per category, which the calibration
+  analysis does.
+- **Polymarket categories are messy** because they derive from tags:
+  Bitcoin, Ethereum, Solana and XRP appear alongside a generic Crypto
+  tag. Analysis code maps them to coarse buckets before any category
+  cut."""

@@ -110,71 +110,36 @@ decision, 2026-07-09), within the configured ingestion frame.
 
 | Platform | Price rows | Markets with prices | Null-price rows | % null | Avg lifetime coverage |
 |---|---|---|---|---|---|
-| polymarket | 201,122 | 14,598 | 0 | 0.0% | 0.9008 |
-| kalshi | 105,759 | 14,977 | 67,766 | 64.08% | 0.8867 |
+| polymarket | 278,579 | 17,078 | 0 | 0.0% | 0.9036 |
+| kalshi | 188,788 | 17,175 | 118,233 | 62.63% | 0.8892 |
 
 Null-price rows are Kalshi candle periods with no trades; those rows
 still carry closing bid/ask, so downstream code uses
 COALESCE(price, (bid + ask) / 2.0). Polymarket history has no bid/ask.
 
-## Observations and anomalies (investigated 2026-07-10)
+## How to read these tables
 
-1. **Kalshi's usable history starts May 2026, not December 2025.** The
-   monthly table above shows it starkly: 100,974 headline markets in May
-   2026 and essentially nothing before (60 in October 2024, 25 in April
-   2026). The trade API purges old settled markets, and the pre-May
-   metadata it still returns carries empty result fields: February 2026 has
-   733 ingested markets and every single one lacks a result. So the Kalshi
-   dataset is honestly about 10 weeks deep. This is an upstream limitation,
-   verified by direct API probes including 404s on direct GETs of old
-   tickers. See LIMITATIONS.md for why Kalshi's public S3 files cannot fill
-   the gap for calibration.
-
-2. **Polymarket has a March 2026 hole in Gamma itself.** Daily headline
-   counts collapse from roughly 1,800 per day to under 250 between March 5
-   and March 26, 2026, with March 23 to 25 empty, then recover instantly.
-   Live re-queries during this audit returned the same tiny counts (42 to
-   108 markets per day on dip days versus 1,773 on a healthy April day),
-   so the hole is in the upstream API data, not our ingestion. Phase 3
-   should treat March 2026 as under-covered rather than a real drop in
-   market activity.
-
-3. **A few Polymarket markets close before the window starts** (2 in
-   October 2023, about 100 across early 2024). The frame keys on scheduled
-   end date, but markets that resolve early stop trading at their
-   closedTime, which can precede the window. Harmless: they are real
-   resolved markets and Phase 3 filters by whatever horizon it needs.
-
-4. **Roughly one third of headline markets resolve YES on both platforms**
-   (31.9% Polymarket, 31.2% Kalshi). This is expected, not a red flag:
-   multi-outcome events list one binary leg per candidate and at most one
-   leg resolves YES, which pulls the YES base rate well below one half.
-   The similarity across platforms is a mild sanity check that outcome
-   parsing is consistent.
-
-5. **Kalshi null-price rows are 64% of candle rows.** A daily candle with
-   no trades has no last-trade price but still has closing bid and ask, so
-   this is thin trading, not missing data. Polymarket's series has no such
-   rows because its endpoint already returns a single interpolated price
-   series. Effective daily coverage of each market's lifetime is high and
-   similar on both platforms (0.90 and 0.89).
-
-6. **Category taxonomies are messy on Polymarket.** Categories derive from
-   tags, so Bitcoin, Ethereum, Solana, and XRP appear alongside a generic
-   Crypto tag, and Tennis alongside Sports. Phase 3 needs a small manual
-   mapping to a common taxonomy before category cuts (already noted in
-   LIMITATIONS.md).
-
-7. **Sports dominates both platforms** (43% of Polymarket headline markets,
-   70% of Kalshi). Calibration results will effectively be sports-weighted
-   unless reported per category, which Phase 3 does anyway.
-
-8. **Price fetch yield was 97.3% (Polymarket) and 99.8% (Kalshi).** The 402
-   empty Polymarket histories are NOT dead markets: 384 of them closed in
-   April 2026 and they average $53k volume (max $2.8M). Live re-probes
-   confirm the CLOB prices-history endpoint itself returns zero points for
-   these markets, so this is a second upstream Polymarket data hole
-   concentrated in spring 2026, adjacent to the March metadata hole in
-   observation 2. Phase 3 horizon snapshots simply lose these markets from
-   the sample; the loss is 2.7% and not obviously outcome-correlated, but
-   it is volume-skewed and noted in LIMITATIONS.md.
+- **Kalshi's usable window is far shorter than Polymarket's.** The
+  monthly coverage table shows why: Kalshi's trade API purges older
+  settled markets, so despite a 24-month ingestion window its resolved
+  data effectively begins in May 2026. Pre-May rows that survive mostly
+  lack a result and are excluded from the headline set. Cross-platform
+  comparisons inherit this mismatch.
+- **March 2026 is under-covered on Polymarket**, an upstream hole in the
+  Gamma API verified by live re-queries, not an ingestion failure.
+- **A handful of Polymarket markets close before the ingestion window
+  starts.** The frame keys on scheduled end date, but a market that
+  resolves early stops trading at its closedTime, which can precede the
+  window.
+- **A YES share near one third is expected, not a red flag.**
+  Multi-outcome events list one binary leg per candidate and at most one
+  leg resolves YES, which pulls the base rate well below one half. The
+  two platforms landing within a point of each other is a mild sanity
+  check on outcome parsing.
+- **Sports dominates both platforms**, so pooled results are effectively
+  sports-weighted unless reported per category, which the calibration
+  analysis does.
+- **Polymarket categories are messy** because they derive from tags:
+  Bitcoin, Ethereum, Solana and XRP appear alongside a generic Crypto
+  tag. Analysis code maps them to coarse buckets before any category
+  cut.

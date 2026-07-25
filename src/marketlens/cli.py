@@ -295,6 +295,75 @@ def predict(
                f"model {r['model_log_loss']:.4f}; wrote {out_md}")
 
 
+def _run_verification(config: str) -> None:
+    """Rebuild the review sheet and replay the recorded match verdicts.
+
+    The verdicts themselves live in scripts/apply_verification.py as
+    class-level rules plus machine checks, so verification is
+    reproducible rather than a hand-edited spreadsheet that would be lost
+    on a re-run.
+    """
+    import subprocess
+    import sys
+    import tempfile
+
+    cfg = load_config(config)
+    scripts = cfg.root / "scripts"
+    with tempfile.TemporaryDirectory() as tmp:
+        sheet = Path(tmp) / "review_pairs.jsonl"
+        for args in ([str(scripts / "build_verification_sheet.py"), str(sheet)],
+                     [str(scripts / "apply_verification.py"), str(sheet)]):
+            subprocess.run([sys.executable, *args], cwd=cfg.root, check=True)
+
+
+@app.command()
+def run_all(
+    skip_ingest: bool = typer.Option(
+        False, help="reuse the existing database instead of re-ingesting"),
+    config: str = "config.yaml",
+) -> None:
+    """Reproduce the entire analysis end to end.
+
+    Ingestion re-reads the gzipped archive in data/raw/ rather than the
+    APIs, so a full rerun is offline and costs no requests.
+    """
+    import time
+
+    # Every argument is passed explicitly: these functions carry
+    # typer.Option defaults, which are OptionInfo objects rather than
+    # values when the function is called directly from Python.
+    steps: list[tuple[str, object]] = []
+    if not skip_ingest:
+        steps.append(("ingest", lambda: ingest(
+            platform="all", since=None, until=None, stage="all",
+            max_markets=None, config=config)))
+    steps += [
+        ("quality-report", lambda: quality_report(
+            out="reports/data_quality.md", config=config)),
+        ("match", lambda: match(
+            since="2026-04-28", until=None, threshold=60.0, window_days=3,
+            out="reports/match_candidates.csv", config=config)),
+        ("verify-matches", lambda: _run_verification(config)),
+        ("fetch-pair-prices", lambda: fetch_pair_prices(config=config)),
+        ("calibrate", lambda: calibrate(
+            out="reports/calibration_tables.md", config=config)),
+        ("diverge", lambda: diverge(
+            out_csv="reports/divergence_pairs.csv",
+            out_md="reports/divergence_tables.md", config=config)),
+        ("backtest", lambda: backtest(
+            out_md="reports/backtest_tables.md",
+            out_csv="reports/backtest_trades.csv", config=config)),
+        ("predict", lambda: predict(
+            out_md="reports/prediction_tables.md", config=config)),
+    ]
+    for name, fn in steps:
+        typer.echo(f"\n=== {name} ===")
+        t0 = time.monotonic()
+        fn()
+        typer.echo(f"=== {name} done in {time.monotonic() - t0:.0f}s ===")
+    typer.echo("\nAll steps complete. See reports/.")
+
+
 @app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
