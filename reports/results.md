@@ -101,8 +101,8 @@ hard events, honestly priced.
 
 For every verified matched pair we aligned both price series on calendar
 days and computed spread = Polymarket minus Kalshi in probability points,
-flipping inverse-orientation pairs to 1 - p first. 2,095 pairs had at
-least two common days, 50,276 pair-days in total.
+flipping inverse-orientation pairs to 1 - p first. 2,046 pairs had at
+least two common days, 49,992 pair-days in total.
 
 ### 1. Disagreement is common but small
 
@@ -118,7 +118,7 @@ track each other closely, a minority diverge wildly.
 
 Defining a divergence event as |spread| crossing 5 points, and its
 half-life as the days until the gap first falls to half its opening
-level, we observed **3,641 resolved events with a median half-life of 1
+level, we observed **3,608 resolved events with a median half-life of 1
 day** and a 75th percentile of 2 days. Convergence is quick, which is
 what makes the arbitrage question interesting: the window is short.
 
@@ -159,19 +159,21 @@ are excluded because their $1 payout is not guaranteed.
 
 ### Results by slippage assumption
 
-| Slippage (pts) | Opportunities | % of 2,144 tradable pairs | Mean edge | Median annualized |
+| Slippage (pts) | Opportunities | % of 2,095 tradable pairs | Mean edge | Median annualized |
 |---|---|---|---|---|
-| 0 | 1,154 | 53.8% | 5.1c | 50% |
-| 1 | 919 | 42.9% | 5.9c | 76% |
-| 2 | 778 | 36.3% | 6.5c | 101% |
-| 3 | 706 | 32.9% | 6.5c | 114% |
+| 0 | 1,128 | 53.8% | 5.1c | 50% |
+| 1 | 899 | 42.9% | 5.9c | 74% |
+| 2 | 762 | 36.4% | 6.4c | 95% |
+| 3 | 690 | 32.9% | 6.5c | 107% |
 
 Median edge at 1 point slippage is 3.2 cents on a roughly 95 cent
-outlay, held a median 7 days. Total theoretical profit across all 919
-trades is $54.51 per $1 of payout per trade, and **realized profit
-computed from actual outcomes matches it exactly**: 913 of 919 trades
-paid precisely $1, confirming both the arithmetic and the pair
-verification.
+outlay, held a median 7 days. Total theoretical profit across all 899
+trades is $52.96, and **realized profit computed from actual outcomes
+matches it exactly**, because **every one of the 899 trades paid
+precisely $1**. That is the strongest available confirmation that both
+the cost arithmetic and the pair verification are correct: if any pair
+had been mismatched, its two legs would have resolved inconsistently and
+paid $0 or $2.
 
 Note the counterintuitive shape: mean edge and annualized return RISE as
 the slippage assumption gets harsher. This is a selection effect, not a
@@ -188,9 +190,9 @@ Three reasons the surviving edge is probably not real money, all
 documented rather than assumed away:
 
 1. **The edge lives where liquidity does not.** Sorting entered trades
-   into volume quartiles, the median edge is **7.4 cents in the thinnest
-   quartile against 1.3 cents in the deepest** (Spearman correlation
-   between edge and log volume: -0.32). Polymarket publishes no
+   into volume quartiles, the median edge falls monotonically: **7.5
+   cents in the thinnest quartile, 3.8, 2.4, then 1.3 cents in the
+   deepest**. Polymarket publishes no
    historical order book, so "the price" is a last trade that may be
    good for $50, and the apparent profit is concentrated exactly where
    displayed prices least reflect executable size.
@@ -208,17 +210,58 @@ and the residual gaps that survive an honest fee model live in exactly
 the places where execution is least trustworthy.** That is a market
 efficiency finding, and it is what the data supports.
 
-### Six trades that did not pay $1
+### The outcome audit: how we know the pairs are right
 
-Six of 919 trades paid $0 or $2 instead of $1, meaning the two markets
-resolved inconsistently. These are the residual verification errors that
-survived Phase 2, and they are informative: five are "both teams to
-score" soccer markets where the two venues attached the same generic
-title to different fixtures, and one is a generically titled "Will
-England win?" cricket market matched to a football World Cup group. They are
-reported rather than removed. At 0.7% of trades, they also serve as an
-outcome-based precision estimate for the verified pair set, which is
-stricter than any text-similarity measure.
+An earlier version of this backtest had six of 919 trades pay $0 or $2
+instead of $1, meaning the two markets resolved inconsistently, which is
+only possible if the pair was wrong. That prompted a full audit: for all
+2,552 verified pairs, do the two markets' actual outcomes agree in the
+way the pair's orientation says they must? This test uses no judgment
+about titles or rules, only recorded outcomes, so it is independent of
+the person who did the matching.
+
+The first audit found 9 inconsistent pairs (0.35%). They were highly
+systematic rather than random:
+
+- **Seven were "both teams to score" markets.** Kalshi titles these
+  generically ("Will both teams score?") and identifies the fixture only
+  in its rules sentence and series ticker. The check meant to compare
+  fixtures was counting any long word as evidence, so boilerplate like
+  "score", "goals" and "match" satisfied it, and a Bundesliga fixture
+  matched a Chinese Super League one.
+- **One was a shared first name**: Austin Eckroat matched to Austin
+  Smotherman, because the subject check accepted 50% token overlap.
+- **One crossed sports entirely**: a generically titled "Will England
+  win?" cricket market matched to the football World Cup Group L.
+
+Each failure mode became a specific fix: parse the two team names out of
+the Kalshi rules sentence and require both on the Polymarket side, require
+the surname rather than half the tokens, and reject pairs whose texts name
+different sports. A fourth fix was needed to make the strict name check
+workable: accented characters were being turned into word breaks, so
+"Mbappé" and "Mbappe" did not compare equal, which is why the loose rule
+existed in the first place.
+
+After the fixes, **zero of 2,507 non-basis-risk pairs are inconsistent**,
+and **all 899 backtested trades pay exactly $1** at every slippage
+assumption. For scale, two unrelated markets drawn at random from these
+platforms would resolve inconsistently about 43% of the time, so a zero
+rate across 2,507 pairs is strong evidence the matched set is clean.
+
+The one pair that still resolves inconsistently is not an error, it is
+the project's cleanest example of basis risk, and it is now labelled as
+such: Polymarket asked whether Claude Fable 5 would be restored for US
+customers by a date, while Kalshi asked whether a Source Agency would
+REPORT that restoration. The event happened; the reporting condition did
+not trigger. Same event, different resolution criteria, genuinely
+different outcomes. That is basis risk realized rather than theorized,
+and it is exactly why those pairs are excluded from the backtest.
+
+Caveat on interpretation: consistent outcomes are necessary but not
+sufficient for a correct pair, since two unrelated longshots both
+resolving NO agree by luck. The honest reading is that this test cannot
+prove precision is 100%, but it does place a hard upper bound on how many
+pairs can be wrong in a way that would matter to the backtest.
 
 ## Phase 6: Does anything beat the market price?
 

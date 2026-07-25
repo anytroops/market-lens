@@ -120,8 +120,9 @@ than a skim:
    the Kalshi subtitle. scripts/build_verification_sheet.py rebuilds the
    review sheet from the database.
 
-Outcome: 2,617 verified (2,353 same-orientation, 208 inverse, 56 basis
-risk), 469 rejected, 1 unresolvable. Of the 19 pairs where both sides
+Outcome after the outcome audit below: 2,552 verified (2,300
+same-orientation, 207 inverse, 45 basis risk), 534 rejected, 1
+unresolvable. Of the 19 pairs where both sides
 already have sampled price histories, 16 verified usable. Notable
 whole-class rejections beyond the earlier examples: Kalshi's Eurovision
 overall/jury series matched Polymarket's jury/overall markets crosswise
@@ -131,11 +132,46 @@ lengths that matched esports "Games Total" titles, and CPI "exactly
 0.5%" vs "above 0.5%".
 
 **Independence caveat:** the matcher's author (Claude) also verified its
-output. The audit trail exists precisely so this is checkable: Sean
-should spot-check roughly 20 random rows of match_candidates.csv (filter
-verified in {1, inv, br}) against the live market pages. Rejections are
-cheap to double-check too since every `0` row keeps its titles side by
-side.
+output, so a re-read of the same text would not be independent evidence.
+
+## Outcome audit (2026-07-25): the check that needs no judgment
+
+A verified pair makes a falsifiable prediction: the two markets must
+resolve consistently, agreeing for same-orientation pairs and disagreeing
+for inverse ones. That test uses only recorded outcomes, so it is
+independent of whoever did the matching.
+
+The first run found **9 of 2,604 pairs inconsistent (0.35%)**, and they
+were systematic rather than random:
+
+| Cause | Pairs | Fix |
+|---|---|---|
+| Generic "both teams to score" titles matched across leagues | 7 | Parse both team names out of the Kalshi rules sentence and require each on the Polymarket side, instead of counting any long word |
+| Shared first name (Austin Eckroat vs Austin Smotherman) | 1 | Require the surname to match, not 50% of tokens |
+| Cricket market matched to football World Cup | 1 | Reject pairs whose texts name different sports |
+
+A fourth fix made the strict name rule usable: accent characters were
+being turned into word breaks, so "Mbappé" and "Mbappe" did not compare
+equal. Normalizing Unicode first is what allowed tightening the name
+check without losing real pairs.
+
+**After the fixes, 0 of 2,507 non-basis-risk pairs are inconsistent**, and
+all 899 backtested trades pay exactly $1. Two unrelated markets from these
+platforms would resolve inconsistently about 43% of the time, so zero
+across 2,507 pairs is strong evidence the set is clean. Consistency is
+necessary but not sufficient (two unrelated longshots both resolving NO
+agree by luck), so this bounds rather than proves precision.
+
+The single pair that still resolves inconsistently is not an error but
+the project's clearest basis-risk case, now labelled as such: Polymarket
+asked whether Claude Fable 5 would be restored for US customers, Kalshi
+whether a Source Agency would REPORT the restoration. The event happened,
+the reporting condition did not trigger.
+
+A live spot check of 20 random verified pairs (seed 2026) found all 20
+correct on titles, rules text, and outcomes; re-fetching the Kalshi side
+live confirmed the stored outcomes exactly for the 2 of 5 sampled tickers
+that Kalshi had not yet purged.
 
 ## Honest limitations
 

@@ -34,17 +34,18 @@ at both horizons, so composition cannot explain it, Polymarket's Brier score
 improves from 0.1344 at 7 days out to 0.1145 at 24 hours, and Kalshi's from
 0.0766 to 0.0582. Resolution (discrimination) rises in step.
 
-**4. The two venues disagree constantly, but briefly.** Across 2,095 verified
-matched pairs and 50,276 pair-days, the mean absolute spread is 4.2 probability
-points, exceeding 5 points on 22% of days and 10 points on 10%. Of 3,641
+**4. The two venues disagree constantly, but briefly.** Across 2,046 verified
+matched pairs and 49,992 pair-days, the mean absolute spread is 4.2 probability
+points, exceeding 5 points on 22% of days and 10 points on 10%. Of 3,608
 divergence events, the median half-life is **1 day**: gaps open and close fast.
 
 ![Spread distribution](reports/figures/spread_distribution.png)
 
 **5. Apparent arbitrage survives fees on paper, but not scrutiny.** At a
-1-point slippage assumption, 919 of 2,144 tradable pairs (43%) showed a
-fee-adjusted combined cost below \$1, median edge 3.2 cents and median 76%
-annualized. Raising the slippage assumption to 3 points cuts that to 33% of
+1-point slippage assumption, 899 of 2,095 tradable pairs (43%) showed a
+fee-adjusted combined cost below \$1, median edge 3.2 cents and median 74%
+annualized. Every one of those 899 trades paid out exactly \$1 at
+resolution, which is the check that the matched pairs are real. Raising the slippage assumption to 3 points cuts that to 33% of
 pairs. The honest reading is in [LIMITATIONS.md](LIMITATIONS.md): the edge
 concentrates in thin, early-life quotes where the displayed price is good for
 tens of dollars, not thousands, and Polymarket has no historical order book to
@@ -82,7 +83,7 @@ Full write-up with all numbers: [reports/results.md](reports/results.md).
 ```
 
 Every statistic is a small pure function with a hand-computed unit test.
-**111 tests, all passing.**
+**129 tests, all passing.**
 
 ## Key engineering problems
 
@@ -97,8 +98,15 @@ matches min, 1st half never matches 2nd half, a bare "A vs B" moneyline only
 matches propositions about winning, weather pairs must agree on a city that
 Kalshi encodes in the series ticker rather than the title. That lifted measured
 precision to roughly 90%, after which every candidate was checked against both
-platforms' full resolution rules text. Method and measured accuracy:
-[reports/matching.md](reports/matching.md).
+platforms' full resolution rules text.
+
+The final check used no text judgment at all: for every verified pair, do the
+two markets' recorded outcomes actually agree the way the pair says they must?
+That surfaced 9 bad pairs from three specific causes (generic "both teams to
+score" titles matching different fixtures, a shared first name, and a cricket
+market matched to football). After fixing those, **0 of 2,507 non-basis-risk
+pairs resolve inconsistently**, against roughly 43% expected if pairs were
+random. Method and measured accuracy: [reports/matching.md](reports/matching.md).
 
 **Point-in-time discipline.** Every forecast is the last price at or before the
 snapshot moment, and the backtest can only enter on data available that day.

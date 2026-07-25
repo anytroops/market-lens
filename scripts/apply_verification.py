@@ -10,7 +10,9 @@ template classes individually. A universal SUBJECT CHECK rejects any
 accepted pair whose Kalshi subtitle tokens are not covered by the
 Polymarket title (catches same-template different-person pairs).
 """
-import sqlite3, json, csv, re, sys, collections
+import sqlite3, json, csv, re, sys, collections, unicodedata
+
+from rapidfuzz import fuzz
 
 # Class-level decisions: series ticker -> code
 ACCEPT = set("""KXWCGOAL KXWCAST KXPGATOP5 KXPGATOP10 KXPGATOP20 KXPGATOUR
@@ -49,7 +51,11 @@ KXNBASERIES3PMLEADER KXLLM1 KXNBA2D KXATPGRANDSLAMFIELD KXFEATUREDRAKE
 KXTRYFIREPOWELL KXAGNOMCOD KXGOVGANOMR KXGOVOKNOMR KXNVPRIMARY
 KXARGPREMDIVBTTS KXPERUPRES1R""".split())
 
-BASIS_RISK = set("""KXRT KXGOVNMNOMR KXGOVNMNOMD KXGOVSCNOMD KXGOVSCNOMR
+# KXFABLERESTORE is the project's cleanest demonstrated basis-risk case:
+# Polymarket resolves on the restoration itself, Kalshi on whether a
+# Source Agency REPORTS it. The pair actually resolved YES on one venue
+# and NO on the other, which is basis risk realized rather than theorized.
+BASIS_RISK = set("""KXFABLERESTORE KXRT KXGOVNMNOMR KXGOVNMNOMD KXGOVSCNOMD KXGOVSCNOMR
 KXGOVALNOMR KXGOVALNOMD KXGOVORNOMR KXGOVOHNOMR KXGOVMDNOMR KXGOVNENOMR
 KXGOVGANOMD KXAGNOMTXR KXVOTEFEDCHAIR KXTRAVISKELCEWEDDING
 KXSCOTPARLIAMENT KXWALESPARLIAMENT""".split())
@@ -61,29 +67,98 @@ ACCEPT.add("KXNBA")
 WEATHER_RE = re.compile(r"^KX(HIGH|LOW|MIN|MAX)")
 
 STOP = set("the a an of in at for to and or vs will be win wins won by on".split())
+# Club-name boilerplate: never distinctive enough to identify a fixture.
+GENERIC_CLUB = set(
+    "fc sc cf ac afc cd club city united town athletic real deportivo".split())
+# Kalshi fixture rules read "If X and Y both score goals in the X vs Y ...".
+TEAMS_RE = re.compile(r"^If (.+?) and (.+?) both score", re.I)
+NAME_MATCH = 85  # rapidfuzz ratio treated as the same word
+
+
+def strip_accents(s):
+    """Mbappe and Mbappé must tokenize identically.
+
+    Without this the punctuation stripper turned accented letters into
+    word breaks, so real pairs failed a strict name check while the
+    loose check that compensated let wrong people through.
+    """
+    return "".join(c for c in unicodedata.normalize("NFKD", s or "")
+                   if not unicodedata.combining(c))
+
 
 def norm_tokens(s):
-    return [t for t in re.sub(r"[^a-z0-9 ]+", " ", (s or "").lower()).split()
-            if t not in STOP]
+    cleaned = re.sub(r"[^a-z0-9 ]+", " ", strip_accents(s).lower())
+    return [t for t in cleaned.split() if t not in STOP]
+
+
+def _fuzzy_in(token, haystack_tokens):
+    return any(fuzz.ratio(token, h) >= NAME_MATCH for h in haystack_tokens)
+
 
 def subject_ok(k_sub, pm_title, pm_outcomes):
-    """Kalshi subtitle tokens must appear in the PM title or outcomes."""
-    toks = norm_tokens(k_sub)
+    """The Kalshi subtitle's entity must really be the Polymarket subject.
+
+    Requires the LAST substantive token (the surname for people, the
+    distinguishing word for teams and titles) to appear, not just half
+    the tokens. The loose 50% rule matched "Austin Eckroat" to "Austin
+    Smotherman" on the shared first name, which the outcome audit caught.
+    """
+    toks = [t for t in norm_tokens(k_sub) if len(t) >= 3 and not t.isdigit()]
     if not toks:
-        return True  # generic subtitle: fixture check handles these classes
+        return True  # generic subtitle: the fixture check handles these
     hay = set(norm_tokens(pm_title)) | set(
         t for o in pm_outcomes for t in norm_tokens(str(o)))
-    hit = sum(1 for t in toks if t in hay)
-    return hit / len(toks) >= 0.5
+    if not _fuzzy_in(toks[-1], hay):
+        return False
+    hits = sum(1 for t in toks if _fuzzy_in(t, hay))
+    return hits / len(toks) >= 0.5
+
 
 def fixture_ok(pm_title, pm_desc, k_rules):
-    """For generic-title fixture markets: K rules teams must appear in PM."""
-    kt = [t for t in norm_tokens(k_rules) if len(t) > 3]
-    if not kt:
+    """Generic-title fixture markets must name the same two teams.
+
+    Parses both team names out of the Kalshi rules sentence and requires
+    each to share a distinctive token with the Polymarket side. The old
+    version counted any long word, so boilerplate ("score", "goals",
+    "match") satisfied it and Bundesliga fixtures matched Chinese Super
+    League ones; seven such pairs were caught by the outcome audit.
+    """
+    m = TEAMS_RE.match((k_rules or "").strip())
+    if not m:
         return True
     hay = set(norm_tokens(pm_title)) | set(norm_tokens(pm_desc))
-    hits = sum(1 for t in set(kt) if t in hay)
-    return hits >= 2
+    for team in m.groups():
+        tt = [t for t in norm_tokens(team)
+              if len(t) >= 3 and t not in GENERIC_CLUB]
+        if tt and not any(_fuzzy_in(t, hay) for t in tt):
+            return False
+    return True
+
+# Sport fingerprints. Polymarket reuses generic titles like "Will England
+# win?" across sports and puts the real context only in the description,
+# so a title-level match can silently cross sports: the outcome audit
+# caught a cricket market matched to a football World Cup group.
+SPORT_WORDS = {
+    "cricket": ("cricket", "test series", "odi", "t20", "wickets"),
+    "soccer": ("soccer", "fifa", "premier league", "la liga", "bundesliga",
+               "serie a", "ligue 1", "mls", "uefa", "goals"),
+    "basketball": ("basketball", "nba", "euroleague"),
+    "hockey": ("hockey", "nhl", "iihf"),
+    "baseball": ("baseball", "mlb", "innings"),
+    "tennis": ("tennis", "atp", "wta", "set 1", "grand slam"),
+    "golf": ("golf", "pga", "tee", "the cut"),
+    "football": ("nfl", "touchdown", "quarterback"),
+}
+
+
+def sports_conflict(pm_text, k_text):
+    """True when the two sides clearly describe different sports."""
+    def sports_in(text):
+        t = strip_accents(text or "").lower()
+        return {s for s, words in SPORT_WORDS.items() if any(w in t for w in words)}
+    a, b = sports_in(pm_text), sports_in(k_text)
+    return bool(a) and bool(b) and not (a & b)
+
 
 FIXTURE_CLASSES = {"KXEPLBTTS", "KXMLSBTTS", "KXSERIEABTTS", "KXLALIGABTTS",
                    "KXLIGUE1BTTS", "KXBUNDESLIGABTTS", "KXUCLBTTS",
@@ -179,6 +254,8 @@ def decide(p):
     if not subject_ok(sub, pm_title, outcomes):
         return "0", ""
     if series in FIXTURE_CLASSES and not fixture_ok(pm_title, pm_desc, p["k_rules"]):
+        return "0", ""
+    if sports_conflict(f"{pm_title} {pm_desc}", f"{p['k_title']} {p['k_rules']}"):
         return "0", ""
 
     if code == "1" and orient == "inverse":

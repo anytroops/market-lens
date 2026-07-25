@@ -6,9 +6,9 @@ slippage, drops below $1. Hold to resolution.
 
 | Slippage (pts) | Tradable pairs | Opportunities | % of pairs | Mean edge (c) | Median days held | Median annualized % | Realized = theoretical? |
 |---|---|---|---|---|---|---|---|
-| 0 | 2144 | 1154 | 53.82 | 5.1 | 5.0 | 50.2 | 1148/1154 |
-| 1 | 2144 | 919 | 42.86 | 5.93 | 7.0 | 76.2 | 913/919 |
-| 2 | 2144 | 778 | 36.29 | 6.49 | 7.0 | 101.1 | 772/778 |
-| 3 | 2144 | 706 | 32.93 | 6.51 | 7.0 | 114.4 | 700/706 |
+| 0 | 2095 | 1128 | 53.84 | 5.07 | 5.0 | 49.7 | 1128/1128 |
+| 1 | 2095 | 899 | 42.91 | 5.89 | 7.0 | 74.1 | 899/899 |
+| 2 | 2095 | 762 | 36.37 | 6.44 | 8.5 | 94.9 | 762/762 |
+| 3 | 2095 | 690 | 32.94 | 6.48 | 10.0 | 106.9 | 690/690 |
 
 Trade detail (1pt slippage case) in backtest_trades.csv.

@@ -1,5 +1,32 @@
 # Worklog
 
+## 2026-07-25: Outcome audit of the matched set
+
+Sean asked for a 20-pair spot check. Did that, plus a stronger test that
+needs no judgment: every verified pair predicts that its two markets
+resolve consistently, and outcomes are recorded facts rather than my
+reading of titles.
+
+- First audit: 9 of 2,604 pairs inconsistent (0.35%), from exactly three
+  causes: generic "both teams to score" titles matching across leagues
+  (7), a shared first name (1), and a cricket market matched to football
+  (1). Root cause of the biggest one was a fixture check that counted any
+  long word, so boilerplate satisfied it.
+- Fixes: parse both team names out of the Kalshi rules sentence, require
+  the surname rather than 50% of tokens, reject cross-sport pairs, and
+  normalize Unicode so accented names compare equal (that last one is
+  what made the strict name check possible without losing real pairs).
+- After fixes: 0 of 2,507 non-basis-risk pairs inconsistent, and all 899
+  backtested trades pay exactly $1 at every slippage assumption. Verified
+  set is now 2,552 pairs (was 2,604); 52 pairs removed.
+- The one remaining inconsistent pair is the project's best basis-risk
+  example and is now labelled as such: Fable 5 restored (Polymarket) vs
+  a Source Agency REPORTING the restoration (Kalshi). Same event,
+  different criteria, genuinely different outcomes.
+- 20-pair random spot check (seed 2026): all 20 correct. Live re-fetch of
+  5 Kalshi tickers matched stored outcomes for the 2 that had not yet
+  been purged, which also re-confirms the rolling-purge finding.
+
 ## 2026-07-25: Phases 4 to 6 complete, all spec deliverables shipped
 
 Done:
