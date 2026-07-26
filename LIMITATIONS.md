@@ -69,6 +69,24 @@ is, why it exists, and what it affects.
   matched and verified. Fetch price histories for matched pairs promptly
   after matching; anything deferred may be gone.
 
+## Kalshi price artifacts (discovered 2026-07-25, Phase 4 review)
+
+- **Stale last-trade prints.** Kalshi's daily candlesticks carry a
+  last-trade price that persists after the book has moved away from it.
+  2.2% of Kalshi rows with both a trade and a book had the trade more
+  than 5 points outside the book, 0.12% more than 50 points outside (a
+  market quoted 8 to 14 cents reporting a 96 cent last trade). Taken at
+  face value these manufacture enormous fake divergences.
+- **Trades against empty books.** A day can show a trade at the ask of a
+  0.00 to 0.97 book, which is one participant lifting a lone resting
+  order rather than a market consensus.
+- Both are now handled by one shared rule (`analysis/prices.py`): a
+  Kalshi day is usable only with a two-sided book tighter than 20 points,
+  and a trade is preferred over the midpoint only when consistent with
+  the quotes. **This correction retracted a published finding**: Kalshi
+  favorites had appeared significantly overpriced and its 0.6 to 0.9
+  range significantly rich; neither survives on cleaned data.
+
 ## Statistical dependence
 
 - **Multi-outcome events create dependent rows.** A "who wins the

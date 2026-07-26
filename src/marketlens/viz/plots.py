@@ -60,9 +60,11 @@ def pair_case_study(df, pm_title: str, k_title: str, annotation: str,
     ax.set_ylabel("Implied probability", fontsize=10, color=INK)
     ax.legend(frameon=False, fontsize=9, loc="best")
     title = pm_title if len(pm_title) < 70 else pm_title[:67] + "..."
-    ax.set_title(title, fontsize=11, color=INK, loc="left", pad=14)
+    n_lines = annotation.count("\n") + 1
+    ax.set_title(title, fontsize=11, color=INK, loc="left",
+                 pad=10 + 11 * n_lines)
     ax.text(0, 1.02, annotation, transform=ax.transAxes, fontsize=8,
-            color=MUTED)
+            color=MUTED, va="bottom", linespacing=1.5)
     _style_axes(ax)
 
     axs.fill_between(x, df["spread"], 0, color=PALETTE["polymarket"],

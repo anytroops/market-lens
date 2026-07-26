@@ -1,8 +1,7 @@
 """Phase 4 orchestration: verified pairs -> aligned spreads -> tables and figures.
 
-Kalshi daily prices follow the same quote rule as calibration: last trade
-when the day traded, else bid/ask midpoint when the closing spread is at
-most 0.20, else no observation for that day.
+Daily prices come from the shared rule in analysis/prices.py, which also
+discards Kalshi last-trade prints that contradict the same-day book.
 """
 
 from __future__ import annotations
@@ -17,10 +16,10 @@ import pandas as pd
 
 from marketlens.analysis import divergence as dv
 from marketlens.analysis.calibration import strip_placeholder_prefix
+from marketlens.analysis.prices import usable_price
 
 log = logging.getLogger(__name__)
 
-MAX_QUOTE_SPREAD = 0.20
 EVENT_THRESHOLD = 5.0
 
 
@@ -33,11 +32,10 @@ def load_daily_prices(conn: sqlite3.Connection, platform: str,
             f"SELECT market_id, ts, price, bid, ask FROM prices "
             f"WHERE platform = ? AND market_id IN ({q})",
             [platform, *ids]):
-        if price is None:
-            if bid is None or ask is None or (ask - bid) > MAX_QUOTE_SPREAD:
-                continue
-            price = (bid + ask) / 2.0
-        series[mid].append((ts, price))
+        p = usable_price(price, bid, ask)
+        if p is None:
+            continue
+        series[mid].append((ts, p))
     out = {}
     for mid, points in series.items():
         points.sort()

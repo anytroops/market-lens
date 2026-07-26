@@ -23,13 +23,13 @@ from pathlib import Path
 import numpy as np
 
 from marketlens.analysis import calibration as cal
+from marketlens.analysis.prices import usable_price
 from marketlens.matching.matcher import category_bucket
 from marketlens.viz import plots
 
 log = logging.getLogger(__name__)
 
 HORIZONS = {"7d": 7 * 86400, "24h": 86400}
-MAX_QUOTE_SPREAD = 0.20
 
 
 def _iso_to_epoch(iso_ts: str) -> int:
@@ -49,12 +49,11 @@ def load_snapshots(conn: sqlite3.Connection, platform: str) -> dict:
     for mid, ts, price, bid, ask in conn.execute(
             "SELECT market_id, ts, price, bid, ask FROM prices WHERE platform = ?",
             (platform,)):
-        if price is None:
-            if bid is None or ask is None or (ask - bid) > MAX_QUOTE_SPREAD:
-                dropped_wide += 1
-                continue
-            price = (bid + ask) / 2.0
-        series[mid].append((ts, price))
+        p = usable_price(price, bid, ask)
+        if p is None:
+            dropped_wide += 1
+            continue
+        series[mid].append((ts, p))
 
     out = {h: {"prob": [], "outcome": [], "bucket": [], "volume": [],
                "market_id": []} for h in HORIZONS}

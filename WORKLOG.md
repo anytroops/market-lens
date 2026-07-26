@@ -1,5 +1,33 @@
 # Worklog
 
+## 2026-07-25: Case-study review exposes Kalshi stale prints, one finding retracted
+
+Reviewing the case-study charts (spec calls them the most interview-useful
+artifact) surfaced a 91 point one-day divergence that was too large to be
+real. It was a Kalshi last-trade print of 0.96 in a market quoted 8 to 14
+cents that day.
+
+- Quantified: 2.2% of Kalshi rows with both a trade and a book have the
+  trade more than 5 points outside the book, 0.12% more than 50 points.
+  A related case is a trade at the ask of an empty 0.00/0.97 book.
+- Fix: new analysis/prices.py with one shared usable_price rule (11 unit
+  tests), replacing quote logic that had been duplicated in three modules.
+  A Kalshi day needs a two-sided book tighter than 20 points; a trade is
+  preferred only when consistent with the quotes.
+- **Retraction:** the Phase 3 findings that Kalshi favorites were
+  significantly overpriced and that its 0.6 to 0.9 range ran rich were
+  artifacts. Both disappear on cleaned data. results.md now documents the
+  retraction rather than quietly restating the numbers.
+- What survives is cleaner: Kalshi longshots are significantly overpriced
+  by 0.8pp (the classic favorite-longshot direction), and Kalshi's
+  calibration error improves from 0.0004 to 0.0002 at 24h.
+- Phase 6 conclusion strengthens: the feature model is now marginally
+  WORSE than the raw price (t = -0.48).
+- Case studies are now selected by phenomenon (fast-news blowout, single
+  converging event, persistent offset, basis risk, typical tight
+  tracking) rather than by volume, each annotated with what it shows.
+  The old selection included a flat longshot that illustrated nothing.
+
 ## 2026-07-25: Outcome audit of the matched set
 
 Sean asked for a 20-pair spot check. Did that, plus a stronger test that

@@ -12,13 +12,13 @@ Setup: for every sampled resolved market we took its price 24 hours
 before close (and separately 7 days before close), using only data
 available at that moment, and asked how often markets priced at X%
 actually happened. Polymarket sample: 14,638 markets at the 24h horizon.
-Kalshi: 11,010. Wilson 95% intervals throughout.
+Kalshi: 10,643. Wilson 95% intervals throughout.
 
 ### 1. Both platforms are strikingly well calibrated overall
 
 The reliability component of the Brier score (average squared gap between
 what markets said and what happened, bucket by bucket; 0 is perfect) is
-0.0001 for Polymarket and 0.0004 for Kalshi at the 24h horizon. For
+0.0001 for Polymarket and 0.0002 for Kalshi at the 24h horizon. For
 context, always answering 50% would score 0.25 on the full Brier scale.
 The interview sentence: "Polymarket contracts priced around 15 cents
 resolved YES 15% of the time, contracts priced around 97 cents resolved
@@ -26,7 +26,7 @@ YES 98% of the time, and that diagonal pattern holds across every bucket
 with tight confidence intervals" (see
 `figures/calibration_polymarket_24h.png`).
 
-### 2. The classic favorite-longshot bias is nearly gone
+### 2. The favorite-longshot bias is absent on Polymarket, small but real on Kalshi
 
 The textbook bias says longshots are overpriced and favorites
 underpriced. At the 24h horizon:
@@ -36,42 +36,58 @@ underpriced. At the 24h horizon:
   significant bias.
 - Polymarket favorites (implied 97.1%) resolved 98.2% [96.9%, 99.0%]:
   directionally the classic underpricing, not significant.
-- Kalshi longshots (implied 3.0%) resolved 2.5% [2.1%, 3.0%]: the implied
-  price sits at the interval's edge, a mild longshot overpricing worth
-  about 0.5 probability points.
-- Kalshi favorites (implied 96.7%) resolved 94.9% [92.9%, 96.3%]: the
-  OPPOSITE of the classic pattern, and significant.
+- Kalshi longshots (implied 3.1%) resolved 2.3% [1.9%, 2.7%]. The implied
+  price sits above the whole interval, so this is a **significant
+  longshot overpricing of about 0.8 percentage points**, the classic
+  effect.
+- Kalshi favorites (implied 96.7%) resolved 97.4% [95.8%, 98.4%]:
+  directionally classic, not significant.
 
-Honest summary: on 2026 short-horizon contracts the favorite-longshot
-bias is at most half a percentage point where it exists at all. The
-older literature studied longer-horizon, thinner, often
-racetrack-style markets; modern liquid prediction markets have largely
-arbitraged this away.
+Honest summary: the direction of the textbook bias is right on Kalshi and
+statistically detectable in the longshot tail, but the magnitude is under
+one percentage point, an order of magnitude smaller than the racetrack
+literature. Polymarket shows no significant bias in either tail. An
+earlier version of this analysis reported the opposite sign on Kalshi
+favorites; that was an artifact of stale last-trade prints, described in
+the data-quality note below.
 
-### 3. Kalshi's mid-to-high range runs slightly rich
+### 3. A finding that did not survive better data cleaning
 
-Kalshi buckets from roughly 0.6 to 0.9 sit consistently 3 to 5 points
-below the diagonal, significantly so: markets priced around 64 cents
-resolved 60.1% (interval tops out at 64.2%), 75 cents resolved 69.8%
-(tops out at 74.1%), and 96 cents resolved 94.2% (tops out at 95.7%).
-Polymarket shows no comparable pattern. Two candidate explanations,
-deliberately left open: a genuine tendency of Kalshi buyers to overpay
-for likely-but-uncertain outcomes, or a residue of our quote handling,
-since Kalshi days without trades contribute a bid/ask midpoint. Phase 5
-does not settle it. That backtest uses bid and ask separately, so if
-Kalshi's YES side were systematically rich, its trades should have
-skewed toward buying Kalshi NO. They skew the other way (34% buy Kalshi
-NO, 66% buy Kalshi YES), so the arbitrage evidence points away from a
-simple "Kalshi YES is overpriced" story. Distinguishing the two
-explanations properly needs trade-only prices with no midpoint
-substitution, which is listed in FUTURE.md.
+An earlier run reported that Kalshi's 0.6 to 0.9 buckets sat 3 to 5
+points below the diagonal, significantly, and that its favorites were
+overpriced. Both effects disappeared once stale last-trade prints were
+removed. In the corrected data those buckets sit inside their confidence
+intervals: markets priced around 64 cents resolve 61.4% (interval reaches
+65.6%), 75 cents resolve 72.1% (reaches 76.4%), and 85 cents resolve
+84.8% against an implied 84.5%.
+
+What survives is narrower and cleaner: the longshot bucket and the 0.2 to
+0.3 bucket are both significantly rich on Kalshi (implied 24.5% resolving
+21.4%, interval reaching 24.2%). This is worth stating plainly because
+the retracted version was the more interesting claim. A finding that
+evaporates when a data artifact is fixed was never a finding.
+
+**Data-quality note: stale Kalshi prints.** Kalshi's daily candlesticks
+carry a last-trade price that persists even when the trade is old and the
+book has moved far away. Measured here, 2.2% of Kalshi rows with both a
+trade and a book had the trade more than 5 points outside the book, and
+0.12% more than 50 points outside: one market quoted 8 to 14 cents
+reported a 96 cent last trade. A related case is a trade printing at the
+ask of an essentially empty book (bid 0.00, ask 0.97, with a 9-lot
+trading at 0.97), which is one person lifting a lone resting order rather
+than a 97% consensus. Both are now rejected by a single shared rule in
+`analysis/prices.py`: a Kalshi day is usable only if it has a two-sided
+book tighter than 20 points, and within that book a trade is preferred
+only when consistent with the quotes. This was found by inspecting a
+case-study chart showing a 91 point one-day divergence that was too large
+to be real.
 
 ### 4. Markets sharpen as resolution approaches, cleanly
 
 On the same set of markets scored at both horizons, so composition
 cannot explain it: Polymarket's Brier improves from 0.1344 at 7 days to
 0.1145 at 24 hours, with resolution (discrimination) rising 0.0705 to
-0.0893. Kalshi improves 0.0766 to 0.0582, resolution 0.1032 to 0.1214.
+0.0893. Kalshi improves 0.0709 to 0.0538, resolution 0.1076 to 0.1254.
 Information flows into prices as events near, exactly as theory
 predicts.
 
@@ -101,14 +117,14 @@ hard events, honestly priced.
 
 For every verified matched pair we aligned both price series on calendar
 days and computed spread = Polymarket minus Kalshi in probability points,
-flipping inverse-orientation pairs to 1 - p first. 2,046 pairs had at
-least two common days, 49,992 pair-days in total.
+flipping inverse-orientation pairs to 1 - p first. 2,022 pairs had at
+least two common days, 49,340 pair-days in total.
 
 ### 1. Disagreement is common but small
 
-The pair-day weighted mean absolute spread is **4.2 points**. Spreads
-exceed 2 points on 48% of pair-days, 5 points on 22%, and 10 points on
-10%. A third of pairs (33%) average under 2 points of disagreement over
+The pair-day weighted mean absolute spread is **3.9 points**. Spreads
+exceed 2 points on 48% of pair-days, 5 points on 21%, and 10 points on
+9%. A third of pairs (33%) average under 2 points of disagreement over
 their whole life. The distribution is strongly right-skewed: most pairs
 track each other closely, a minority diverge wildly.
 
@@ -118,7 +134,7 @@ track each other closely, a minority diverge wildly.
 
 Defining a divergence event as |spread| crossing 5 points, and its
 half-life as the days until the gap first falls to half its opening
-level, we observed **3,608 resolved events with a median half-life of 1
+level, we observed **3,414 resolved events with a median half-life of 1
 day** and a 75th percentile of 2 days. Convergence is quick, which is
 what makes the arbitrage question interesting: the window is short.
 
@@ -130,8 +146,8 @@ also truncates anything faster than a day to exactly 1.
 ### 3. Kalshi appears to lead Polymarket, slightly
 
 Across 493 pairs with at least 20 common days, the mean correlation of
-daily price changes is 0.188 contemporaneously, 0.059 when Kalshi's move
-precedes Polymarket's by a day, and 0.000 in the other direction. The
+daily price changes is 0.217 contemporaneously, 0.055 when Kalshi's move
+precedes Polymarket's by a day, and 0.006 in the other direction. The
 asymmetry is consistent (Kalshi leads), but both lagged correlations are
 small next to the same-day figure, and daily data cannot resolve
 intraday leadership. Treat this as suggestive, not established.
@@ -279,21 +295,22 @@ resolving through 2026-06-13, test on the 7,695 that resolved after.
 
 | Model | Log loss | Brier |
 |---|---|---|
-| Market price alone | 0.3600 | 0.1166 |
-| Recalibrated price (fitted slope and intercept) | 0.3598 | 0.1165 |
-| Logistic regression with all features | 0.3598 | 0.1166 |
-| Always predict the base rate (0.253) | 0.5651 | n/a |
+| Market price alone | 0.3509 | 0.1136 |
+| Recalibrated price (fitted slope and intercept) | 0.3508 | 0.1136 |
+| Logistic regression with all features | 0.3512 | 0.1138 |
+| Always predict the base rate (0.248) | 0.5607 | n/a |
 
-The features add a log-loss gain of 0.00003 with a paired t statistic of
-**0.08**: indistinguishable from zero. Recalibrating the price alone adds
-0.00019 (t = 0.66), also not significant, which independently confirms
-the Phase 3 finding that these prices need no calibration adjustment. The
-fitted coefficient on logit(price) is 1.05, statistically a hair above
-the 1.0 that would mean "use the market price unchanged".
+The full model is very slightly WORSE than the raw market price: the
+paired gain is -0.00027 with a t statistic of **-0.48**, and the features
+add -0.00043 (t = -1.36) on top of recalibration. Recalibrating the price
+alone adds 0.00016 (t = 0.42), also not significant, which independently
+confirms the Phase 3 finding that these prices need no calibration
+adjustment.
 
-For scale, the market price cuts log loss from 0.565 (knowing only the
-base rate) to 0.360. The price does essentially all of the work available,
-and nothing simple improves on it.
+For scale, the market price cuts log loss from 0.561 (knowing only the
+base rate) to 0.351. The price does essentially all of the work
+available, and the extra features do not merely fail to help, they cost a
+little by adding estimation noise.
 
 ### The lookahead bug that first said otherwise
 

@@ -164,25 +164,51 @@ def diverge(
         f"Cross-platform divergence, {agg['pairs']:,} verified pairs",
         fig_dir / "spread_distribution.png")
 
-    # Case studies: long-overlap, liquid, interesting pairs, diverse categories.
-    cs = table[(table["n_days"] >= 10) & (table["max_abs"] >= 6)]
-    cs = cs.sort_values("volume", ascending=False)
-    picked, seen_cat = [], set()
-    for _, row in cs.iterrows():
-        if row["category"] in seen_cat and len(seen_cat) < 3:
-            continue
-        picked.append(row)
-        seen_cat.add(row["category"])
-        if len(picked) == 5:
-            break
+    # Case studies are selected by PHENOMENON, not by volume: each chart
+    # is meant to show a distinct behaviour that the summary statistics
+    # average away. Picking the five most liquid pairs instead produced
+    # near-duplicates and one flat longshot that illustrated nothing.
+    long = table[table["n_days"] >= 30].copy()
+    long["ratio"] = long["mean_abs"] / long["max_abs"].replace(0, 1)
+    picked, used, captions = [], set(), []
+
+    def take(candidates, caption, sort_col, ascending=False):
+        for _, row in candidates.sort_values(sort_col, ascending=ascending).iterrows():
+            key = (row["pm_id"], row["kalshi_id"])
+            if key in used:
+                continue
+            used.add(key)
+            picked.append(row)
+            captions.append(caption)
+            return
+
+    # 1. Calm then chaos: tight tracking that explodes on fast news.
+    take(long[(long["n_days"] >= 100) & (long["max_abs"] >= 25)],
+         "Tight tracking for months, then a violent divergence once the "
+         "event moves intraday", "n_days")
+    # 2. A single large gap that converges: the half-life story.
+    take(long[(long["max_abs"] >= 40) & (long["mean_abs"] <= 4)],
+         "One large divergence event on an otherwise aligned pair: the gap "
+         "opens and closes fast", "max_abs")
+    # 3. Persistent one-sided offset, not mean reverting.
+    take(long[(long["ratio"] >= 0.5) & (long["mean_abs"] >= 3)],
+         "A persistent one-sided offset rather than a transient gap: one "
+         "venue simply prices this higher throughout", "mean_abs")
+    # 4. Basis risk: same event, criteria that can diverge.
+    take(long[long["basis_risk"] == 1],
+         "A basis-risk pair: same event, resolution criteria that can and "
+         "do come apart, so the spread is not free money", "n_days")
+    # 5. The modal case: near-perfect agreement.
+    take(long[long["mean_abs"] <= 1.0],
+         "The typical pair: two venues agreeing to within a point for "
+         "months", "n_days")
     pm_prices = load_daily_prices(conn, "polymarket", {r["pm_id"] for r in picked})
     k_prices = load_daily_prices(conn, "kalshi", {r["kalshi_id"] for r in picked})
-    for i, row in enumerate(picked, 1):
+    for i, (row, caption) in enumerate(zip(picked, captions), 1):
         df = dv.align_pair(pm_prices[row["pm_id"]], k_prices[row["kalshi_id"]],
                            row["orientation"] or "same")
-        ann = (f"mean |spread| {row['mean_abs']:.1f} pts, max {row['max_abs']:.1f}, "
-               f"{row['n_days']} common days, category {row['category']}"
-               + (", basis-risk pair" if row["basis_risk"] else ""))
+        ann = (f"{caption}\nmean |spread| {row['mean_abs']:.1f} pts, max "
+               f"{row['max_abs']:.1f}, {row['n_days']} common days")
         plots.pair_case_study(df, row["pm_title"], row["k_title"], ann,
                               fig_dir / f"case_study_{i}.png")
 

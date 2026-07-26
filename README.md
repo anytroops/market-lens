@@ -17,7 +17,7 @@ exist in this project.
 **1. Both platforms are remarkably well calibrated.** When a contract is priced
 at 15 cents 24 hours before it closes, it resolves YES about 15% of the time.
 The calibration error component of the Brier score is 0.0001 for Polymarket
-(n = 14,638) and 0.0004 for Kalshi (n = 11,010), against 0.25 for a forecaster
+(n = 14,638) and 0.0002 for Kalshi (n = 10,643), against 0.25 for a forecaster
 who always says 50%.
 
 ![Polymarket calibration](reports/figures/calibration_polymarket_24h.png)
@@ -25,18 +25,19 @@ who always says 50%.
 **2. The textbook favorite-longshot bias has nearly vanished.** Classic studies
 find longshots badly overpriced. Here, Polymarket contracts averaging 2.1%
 implied probability resolved YES 1.8% of the time (95% CI [1.4%, 2.1%], not
-significant), and Kalshi's averaging 3.0% resolved 2.5% ([2.1%, 3.0%], barely
-significant). The bias survives at 0.3 to 0.5 percentage points, an order of
-magnitude smaller than the older literature on thinner markets.
+significant). Kalshi's averaging 3.1% resolved 2.3% ([1.9%, 2.7%]), a real but
+tiny 0.8 percentage point overpricing. The classic effect is directionally
+right where it appears at all, and an order of magnitude smaller than the
+racetrack literature.
 
 **3. Markets sharpen as resolution approaches.** On identical market sets scored
 at both horizons, so composition cannot explain it, Polymarket's Brier score
 improves from 0.1344 at 7 days out to 0.1145 at 24 hours, and Kalshi's from
-0.0766 to 0.0582. Resolution (discrimination) rises in step.
+0.0709 to 0.0538. Resolution (discrimination) rises in step.
 
-**4. The two venues disagree constantly, but briefly.** Across 2,046 verified
-matched pairs and 49,992 pair-days, the mean absolute spread is 4.2 probability
-points, exceeding 5 points on 22% of days and 10 points on 10%. Of 3,608
+**4. The two venues disagree constantly, but briefly.** Across 2,022 verified
+matched pairs and 49,340 pair-days, the mean absolute spread is 3.9 probability
+points, exceeding 5 points on 21% of days and 10 points on 9%. Of 3,414
 divergence events, the median half-life is **1 day**: gaps open and close fast.
 
 ![Spread distribution](reports/figures/spread_distribution.png)
@@ -83,7 +84,7 @@ Full write-up with all numbers: [reports/results.md](reports/results.md).
 ```
 
 Every statistic is a small pure function with a hand-computed unit test.
-**129 tests, all passing.**
+**141 tests, all passing.**
 
 ## Key engineering problems
 
@@ -112,18 +113,23 @@ random. Method and measured accuracy: [reports/matching.md](reports/matching.md)
 snapshot moment, and the backtest can only enter on data available that day.
 Lookahead bias is the fastest way to fake a profitable strategy.
 
-**Silent data artifacts.** Polymarket's price endpoint emits a placeholder near
-0.50 before a market's first trade and on no-trade days. Left alone, it
-manufactured 47 cent "arbitrage" on golf longshots that were really priced at
-0.3 cents on both venues. Detecting and stripping those, plus a guard against
-entering on any single-day price jump above 25 points, cut the apparent
-opportunity rate from 65% of pairs to 43%.
+**Silent data artifacts.** Two were found by looking at charts and asking
+whether a number was physically possible. Polymarket seeds price history with a
+placeholder near 0.50 before a market's first trade, which manufactured 47 cent
+"arbitrage" on golf longshots really priced at 0.3 cents; stripping it plus a
+guard on single-day jumps above 25 points cut apparent opportunities from 65% of
+pairs to 43%. Kalshi's candlesticks carry stale last-trade prints, including a
+96 cent trade in a market quoted 8 to 14 cents, which faked a 91 point
+divergence. A shared rule now requires a two-sided book tighter than 20 points
+before any Kalshi price is believed. That correction **retracted a headline
+finding**: Kalshi favorites had looked significantly overpriced, and did not
+survive the fix.
 
 ## A sixth finding: nothing simple beats the price
 
 A logistic regression on logit(price) plus momentum, category, platform,
 and market age fails to improve on the market price at all (paired
-log-loss gain 0.00003, t = 0.08). Using log-odds matters: a fitted
+log-loss difference -0.00027, t = -0.48). Using log-odds matters: a fitted
 coefficient of 1.0 on logit(price) reproduces the market exactly, and the
 fit lands at 1.05.
 
@@ -132,7 +138,7 @@ one feature group at a time showed the entire gain came from volume, and
 the volume field is each market's LIFETIME volume recorded at ingestion,
 which is after resolution. Markets that resolve YES dramatically attract
 heavy late volume, so the model was reading the future through an
-innocuous-looking column. Removing it collapsed the gain to t = 0.08.
+innocuous-looking column. Removing it collapsed the gain to nothing.
 Written up in full in [reports/results.md](reports/results.md), because
 the catch is more instructive than the result.
 

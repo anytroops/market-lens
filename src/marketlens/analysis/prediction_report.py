@@ -18,13 +18,13 @@ from sklearn.linear_model import LogisticRegression
 
 from marketlens.analysis import calibration as cal
 from marketlens.analysis import prediction as pr
+from marketlens.analysis.prices import usable_price
 from marketlens.matching.matcher import category_bucket
 
 log = logging.getLogger(__name__)
 
 HORIZON_SECONDS = 86400
 MOMENTUM_WINDOW = 7 * 86400
-MAX_QUOTE_SPREAD = 0.20
 SEED = 42
 
 
@@ -42,11 +42,10 @@ def build_feature_frame(conn: sqlite3.Connection) -> pd.DataFrame:
         for mid, ts, price, bid, ask in conn.execute(
                 "SELECT market_id, ts, price, bid, ask FROM prices "
                 "WHERE platform = ?", (platform,)):
-            if price is None:
-                if bid is None or ask is None or (ask - bid) > MAX_QUOTE_SPREAD:
-                    continue
-                price = (bid + ask) / 2.0
-            series[mid].append((ts, price))
+            p = usable_price(price, bid, ask)
+            if p is None:
+                continue
+            series[mid].append((ts, p))
 
         for mid, points in series.items():
             meta = markets.get(mid)

@@ -14,8 +14,8 @@ drops out of that horizon's sample.
 |---|---|---|---|---|---|---|---|
 | polymarket | 7d | 5,611 | 0.1344 | 0.0016 | 0.0705 | 0.2041 | 0.286 |
 | polymarket | 24h | 14,638 | 0.1258 | 0.0001 | 0.0788 | 0.2052 | 0.288 |
-| kalshi | 7d | 2,716 | 0.0766 | 0.0008 | 0.1032 | 0.1793 | 0.234 |
-| kalshi | 24h | 11,010 | 0.1140 | 0.0004 | 0.0825 | 0.1971 | 0.270 |
+| kalshi | 7d | 2,649 | 0.0709 | 0.0004 | 0.1076 | 0.1785 | 0.233 |
+| kalshi | 24h | 10,643 | 0.1092 | 0.0002 | 0.0849 | 0.1948 | 0.265 |
 
 ![](figures/calibration_polymarket_7d.png)
 ![](figures/calibration_polymarket_24h.png)
@@ -31,7 +31,7 @@ lower Brier at 24h than at 7d.
 | Platform | N (paired) | Brier 7d | Brier 24h | Resolution 7d | Resolution 24h |
 |---|---|---|---|---|---|
 | polymarket | 5,611 | 0.1344 | 0.1145 | 0.0705 | 0.0893 |
-| kalshi | 2,716 | 0.0766 | 0.0582 | 0.1032 | 0.1214 |
+| kalshi | 2,649 | 0.0709 | 0.0538 | 0.1076 | 0.1254 |
 
 ### Favorite-longshot bias (24h horizon)
 
@@ -39,8 +39,8 @@ lower Brier at 24h than at 7d.
 |---|---|---|---|---|---|
 | polymarket | longshots (p < 0.10) | 5,307 | 0.021 | 0.018 | [0.014, 0.021] |
 | polymarket | favorites (p > 0.90) | 625 | 0.971 | 0.982 | [0.969, 0.990] |
-| kalshi | longshots (p < 0.10) | 4,577 | 0.030 | 0.025 | [0.021, 0.030] |
-| kalshi | favorites (p > 0.90) | 646 | 0.967 | 0.949 | [0.929, 0.963] |
+| kalshi | longshots (p < 0.10) | 4,556 | 0.031 | 0.023 | [0.019, 0.027] |
+| kalshi | favorites (p > 0.90) | 581 | 0.967 | 0.974 | [0.958, 0.984] |
 
 ### Calibration by category (24h horizon, reliability component)
 
@@ -53,12 +53,12 @@ lower Brier at 24h than at 7d.
 | polymarket | politics | 1,098 | 0.0603 | 0.0018 |
 | polymarket | sports | 8,004 | 0.1725 | 0.0001 |
 | polymarket | weather | 2,110 | 0.0744 | 0.0012 |
-| kalshi | econ | 629 | 0.0651 | 0.0036 |
-| kalshi | entertainment | 798 | 0.0632 | 0.0035 |
-| kalshi | mentions | 531 | 0.1616 | 0.0019 |
-| kalshi | politics | 567 | 0.0344 | 0.0019 |
-| kalshi | sports | 7,412 | 0.1280 | 0.0006 |
-| kalshi | weather | 1,007 | 0.1066 | 0.0017 |
+| kalshi | econ | 614 | 0.0629 | 0.0024 |
+| kalshi | entertainment | 725 | 0.0444 | 0.0029 |
+| kalshi | mentions | 476 | 0.1568 | 0.0019 |
+| kalshi | politics | 567 | 0.0328 | 0.0020 |
+| kalshi | sports | 7,214 | 0.1240 | 0.0003 |
+| kalshi | weather | 981 | 0.1037 | 0.0014 |
 
 ### Calibration by volume tercile (24h horizon)
 
@@ -67,6 +67,6 @@ lower Brier at 24h than at 7d.
 | polymarket | thin | 4,879 | 0.1157 | 0.0014 |
 | polymarket | middle | 4,879 | 0.1223 | 0.0002 |
 | polymarket | deep | 4,880 | 0.1394 | 0.0009 |
-| kalshi | thin | 3,669 | 0.0621 | 0.0029 |
-| kalshi | middle | 3,671 | 0.1247 | 0.0009 |
-| kalshi | deep | 3,670 | 0.1553 | 0.0007 |
+| kalshi | thin | 3,548 | 0.0546 | 0.0021 |
+| kalshi | middle | 3,547 | 0.1206 | 0.0005 |
+| kalshi | deep | 3,548 | 0.1524 | 0.0005 |
