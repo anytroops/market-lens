@@ -326,7 +326,9 @@ That was the tell. The volume field in our schema is each market's
 resolved. It is not knowable at the 24-hour snapshot. Markets that resolve
 YES in dramatic fashion attract heavy late volume, so the model was
 reading the future through a field that looked innocuous. Removing the
-feature collapses the gain from t = 5.30 to t = 0.08.
+feature collapses the apparent edge entirely: on the current cleaned data
+the model without it lands at t = -0.48, marginally worse than the raw
+market price.
 
 This is textbook lookahead bias, and it is worth stating plainly because
 it is the exact failure mode that makes backtests look profitable when
