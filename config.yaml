@@ -24,7 +24,9 @@ storage:
   raw_dir: "data/raw"
 
 http:
-  user_agent: "market-lens-research/0.1 (academic-style calibration study; contact: anytroops12345@gmail.com)"
+  # Identifies the client politely without publishing a personal email in
+  # a public repo. Point it at the project page instead.
+  user_agent: "market-lens-research/0.1 (academic-style calibration study; +https://github.com/anytroops/market-lens)"
   timeout_seconds: 30
   max_retries: 6
   backoff_base_seconds: 1.0
