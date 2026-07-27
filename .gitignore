@@ -4,3 +4,6 @@ __pycache__/
 data/
 .pytest_cache/
 .DS_Store
+
+# Planning doc: kept locally, not published
+SPEC.md
