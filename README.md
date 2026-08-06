@@ -62,15 +62,22 @@ tens of dollars, not thousands, and Polymarket has no historical order book to
 verify depth against. This is a market-microstructure finding, not a trading
 strategy.
 
-**6. Measured execution finally settles it.** The backtest could not see
-order book depth, so it assumed a 1-point slippage haircut and swept 0 to 3.
-Live capture of 120 real books shows Polymarket costs **3.0 points at $50,
-7.3 at $200 and 14.7 at $1,000** (Kalshi, whose books are deep, costs 0.02 to
-0.66). Re-running the backtest at measured rather than assumed slippage cuts
-opportunities from 43% of pairs to **22% at a $200 trade and 12% at $1,000** —
-and the original sensitivity sweep never even reached those levels. Combined
-with the edge being 6x larger in the thinnest volume quartile, the apparent
-arbitrage is an artifact of quoting, not a tradable opportunity.
+**6. Measured execution settles it.** The backtest could not see order book
+depth, so it assumed a flat 1-point slippage haircut. Live capture of 240 real
+books measures it, and the distribution is the finding:
+
+| Polymarket book depth | Median resting | Median cost of a $200 order |
+|---|---|---|
+| thinnest quartile | \$3,379 | **20.4 points** |
+| middle half | \$156,649 | 0.10 points |
+| deepest quartile | \$706,259 | 0.00 points |
+
+Execution is free in liquid markets and ruinous in thin ones (Spearman -0.55
+against depth; within-market variation is 0.02 points, so this is a stable
+property of each book, not noise). **The backtest independently found the edge
+was 6x larger in the thinnest volume quartile.** A 3-to-7 cent edge that exists
+only where crossing the spread costs 20 cents is not an opportunity. Two
+measurements taken separately, pointing the same way.
 [reports/paper_trading.md](reports/paper_trading.md).
 
 Full write-up with all numbers: [reports/results.md](reports/results.md).

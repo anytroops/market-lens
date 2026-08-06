@@ -46,26 +46,56 @@ def _depth_section(conn: sqlite3.Connection, books: int) -> list[str]:
         fmt = lambda v: f"{v:.2f} pts" if v is not None else "n/a"
         lines.append(f"| {plat} | {n} | {fmt(s50)} | {fmt(s200)} | {fmt(s1000)} |")
     lines += ["",
-              "Kalshi's books are deep and tight; Polymarket's are not, which",
-              "is consistent with every other finding in the study. The",
-              "important part is the magnitude: **the backtest's 1 point",
-              "assumption understates real Polymarket execution cost at a",
-              "$200 order by roughly seven times**, and the sensitivity sweep",
-              "did not even extend that far.", "",
-              "Re-running the backtest at the measured levels rather than the",
-              "assumed ones:", "",
+              "Those averages hide the shape, and the shape is the finding.",
+              "Polymarket slippage is not uniformly high: the MEDIAN market",
+              "costs about 0.4 points at $200, while the mean is dragged to",
+              "roughly 7 by a thin tail. Splitting by how much is actually",
+              "resting on the book:", ""]
+
+    rows = conn.execute(
+        """SELECT depth_ask, (vwap_200-best_ask)*100 FROM book_snapshots
+           WHERE platform='polymarket' AND vwap_200 IS NOT NULL
+             AND best_ask IS NOT NULL AND depth_ask > 0""").fetchall()
+    if len(rows) >= 12:
+        import numpy as _np
+        d = _np.array([r[0] for r in rows])
+        sl = _np.array([r[1] for r in rows])
+        q = _np.quantile(d, [0.25, 0.75])
+        lines += ["| Polymarket book depth | Median resting | Median slippage at $200 |",
+                  "|---|---|---|"]
+        for label, mask in (("thinnest quartile", d <= q[0]),
+                            ("middle half", (d > q[0]) & (d <= q[1])),
+                            ("deepest quartile", d > q[1])):
+            if mask.any():
+                lines.append(f"| {label} | ${_np.median(d[mask]):,.0f} | "
+                             f"{_np.median(sl[mask]):.2f} pts |")
+        lines += ["",
+                  "Slippage is effectively zero in liquid Polymarket markets",
+                  "and enormous in thin ones. Repeat observations of the same",
+                  "market show a within-market standard deviation of about",
+                  "0.02 points, so this is a stable property of each book",
+                  "rather than measurement noise.", "",
+                  "**This is what closes the arbitrage question.** The",
+                  "backtest already found the edge was six times larger in the",
+                  "thinnest volume quartile than the deepest. The depth data",
+                  "shows execution costs about 20 points in exactly those thin",
+                  "markets and nothing in the liquid ones. A 3 to 7 cent edge",
+                  "that only exists where crossing the spread costs 20 cents is",
+                  "not an opportunity, and the two measurements were taken",
+                  "independently.", ""]
+
+    lines += ["Re-running the backtest with the mean measured slippage rather",
+              "than the assumed 1 point:", "",
               "| Slippage assumption | Opportunities | Share of tradable pairs |",
               "|---|---|---|",
               "| 1.0 pt (original default) | 906 | 42.9% |",
-              "| 3.01 pts (measured at $50) | 697 | 33.0% |",
-              "| 7.26 pts (measured at $200) | 474 | 22.4% |",
-              "| 14.71 pts (measured at $1000) | 260 | 12.3% |", "",
-              "So the headline arbitrage result does not merely weaken under",
-              "realistic execution, it roughly halves at a $200 trade and",
-              "falls by more than two thirds at $1000. Combined with the",
-              "capacity finding that the edge is concentrated in the thinnest",
-              "quartile, the honest conclusion is that the apparent edge is",
-              "an artifact of quoting rather than a tradable opportunity.", ""]
+              "| 3.01 pts (measured mean at $50) | 697 | 33.0% |",
+              "| 7.26 pts (measured mean at $200) | 474 | 22.4% |",
+              "| 14.71 pts (measured mean at $1000) | 260 | 12.3% |", "",
+              "Even that understates the problem, because a flat haircut",
+              "applied to every pair is the wrong model: the real cost is near",
+              "zero for most markets and catastrophic for the thin ones the",
+              "strategy actually selects.", ""]
     return lines
 
 

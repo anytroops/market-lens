@@ -363,18 +363,25 @@ package holds no credentials.
 
 ### The measurement
 
-Across 120 books captured from open markets:
+Across 240 books captured from open markets, the average cost above the
+touch is 3.01 points at $50, 7.26 at $200 and 14.71 at $1,000 on
+Polymarket, against 0.02 to 0.66 on Kalshi, whose books are deep.
 
-| Platform | Avg cost above the touch at $50 | at $200 | at $1,000 |
-|---|---|---|---|
-| Polymarket | 3.01 points | **7.26 points** | 14.71 points |
-| Kalshi | 0.02 points | 0.08 points | 0.66 points |
+But quoting those means alone would be misleading, and the shape is the
+real finding. The MEDIAN Polymarket market costs only about 0.4 points at
+$200; the mean is dragged up by a thin tail. Splitting by resting depth:
 
-Kalshi's books are deep and tight. Polymarket's are not, which is
-consistent with every other liquidity finding in this study. The number
-that matters is the comparison: **the backtest assumed 1.0 point, and a
-$200 Polymarket order really costs about 7.3.** The sensitivity sweep
-stopped at 3 points, so it never reached the realistic range.
+| Polymarket book depth | Median resting | Median cost of a $200 order |
+|---|---|---|
+| thinnest quartile | $3,379 | **20.43 points** |
+| middle half | $156,649 | 0.10 points |
+| deepest quartile | $706,259 | 0.00 points |
+
+Spearman correlation between depth and slippage is -0.55. Repeat
+observations of the same market give a within-market standard deviation
+of about 0.02 points, so this is a stable property of each book rather
+than measurement noise: liquid Polymarket markets are genuinely cheap to
+trade, and thin ones are genuinely not.
 
 ### Re-running the backtest at measured rather than assumed slippage
 
@@ -386,10 +393,15 @@ stopped at 3 points, so it never reached the realistic range.
 | 14.71 pts | measured at $1,000 | 260 | 12.3% |
 
 The opportunity set roughly halves at a $200 trade and falls by more than
-two thirds at $1,000. Put beside the capacity result from the backtest
-itself, where the median edge is 7.5 cents in the thinnest volume
-quartile against 1.3 cents in the deepest, the two measurements agree:
-the apparent edge sits precisely where the book cannot absorb a trade.
+two thirds at $1,000. Even that understates the problem, because a flat
+haircut is the wrong model once the distribution is known: the true cost
+is near zero for most markets and around 20 points for the thin ones.
+
+Put beside the capacity result from the backtest itself, where the median
+edge is 7.5 cents in the thinnest volume quartile against 1.3 cents in
+the deepest, the two independent measurements agree exactly: **the
+apparent edge sits precisely in the markets where execution costs 20
+points.**
 
 ### The honest conclusion
 

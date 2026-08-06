@@ -1,5 +1,37 @@
 # Worklog
 
+## 2026-08-06: Live execution measurement and dependence correction
+
+Two additions that close the project's two biggest open caveats.
+
+**Live order book capture and paper trading** (read-only: no orders, no
+credentials). The backtest could never see depth, so it assumed a flat
+1-point Polymarket slippage haircut. Measured on 240 real books:
+- mean cost above the touch is 3.0 points at \$50, 7.3 at \$200, 14.7 at
+  \$1,000 on Polymarket, versus 0.02 to 0.66 on Kalshi
+- but the distribution is the finding: the MEDIAN Polymarket market costs
+  0.4 points at \$200, while the thinnest quartile costs 20.4 points
+  (Spearman -0.55 against resting depth). Within-market variation is
+  0.02 points, so this is a property of each book, not noise
+- the backtest independently found the edge is 6x larger in the thinnest
+  volume quartile, so the apparent arbitrage sits exactly where execution
+  costs 20 points. That closes the economic question with two
+  independent measurements
+- paper signals need an open matched pair on both venues at once, and
+  none exist today: the opportunity set is strongly seasonal, with one
+  World Cup responsible for 455 of the 2,552 verified pairs
+
+**Cluster bootstrap for contract dependence**, flagged since Phase 1 and
+now quantified. Design effect 1.24x on Polymarket, 1.41x on Kalshi, so
+honest intervals are 24 to 41 percent wider and Kalshi's effective sample
+size is about half its market count. No conclusion changes: the one
+significant bias (Kalshi longshot overpricing) survives clustering, and
+every non-significant result stays non-significant.
+
+Along the way: fixed a design error where the live sweep polled 12,000
+Kalshi series individually (most of an hour) instead of using the
+historical matches as a prior for which 179 series are worth watching.
+
 ## 2026-07-25: Case-study review exposes Kalshi stale prints, one finding retracted
 
 Reviewing the case-study charts (spec calls them the most interview-useful

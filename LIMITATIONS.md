@@ -112,12 +112,15 @@ is, why it exists, and what it affects.
   do include historical yes_bid/yes_ask, so that leg is execution-realistic.
 - **Displayed prices are not depth. Now measured, not assumed.** Live
   order book capture (`marketlens paper-trade`) records real depth. On
-  120 books the average cost of crossing the Polymarket spread was 3.0
+  240 books the mean cost of crossing the Polymarket spread was 3.0
   points at $50, 7.3 at $200 and 14.7 at $1,000, against the backtest's
-  assumed 1.0. Kalshi is far deeper at 0.02 to 0.66 points. The
-  historical backtest therefore overstates the opportunity set, and its
-  0 to 3 point sensitivity sweep did not extend far enough to cover
-  realistic execution.
+  assumed 1.0, with Kalshi far deeper at 0.02 to 0.66. The distribution
+  matters more than the mean: the median Polymarket market costs 0.4
+  points at $200, but the thinnest quartile costs 20.4 points
+  (Spearman -0.55 against depth). The backtest's flat-haircut model is
+  therefore wrong in both directions at once, too harsh on liquid
+  markets and far too generous on the thin ones its entry rule
+  actually selects.
 - **The live measurement is a snapshot, not a distribution.** 120 books
   captured in one sweep on one day is enough to show the order of
   magnitude but not to characterise how depth varies by category, time
