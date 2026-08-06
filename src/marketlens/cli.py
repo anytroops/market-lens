@@ -391,6 +391,52 @@ def run_all(
 
 
 @app.command()
+def paper_trade(
+    min_volume: float = typer.Option(20000, help="min Polymarket volume for open markets"),
+    threshold: float = typer.Option(85.0, help="match score cutoff"),
+    repeat: int = typer.Option(1, help="number of sweeps"),
+    interval: int = typer.Option(900, help="seconds between sweeps"),
+    config: str = "config.yaml",
+) -> None:
+    """Capture live order books and log paper-trade signals.
+
+    Read-only forward test: no orders are placed and no credentials
+    exist. Each sweep records real depth for open matched pairs and the
+    edge both at the touch (what the backtest saw) and after walking the
+    book for $50, $200 and $1000.
+    """
+    import time as _time
+
+    from marketlens.live.runner import run_once
+
+    cfg, conn = _connect(config)
+    for i in range(repeat):
+        stats = run_once(cfg, conn, min_volume, threshold)
+        typer.echo(f"sweep {i + 1}/{repeat}: {stats}")
+        if i + 1 < repeat:
+            _time.sleep(interval)
+    conn.close()
+
+
+@app.command()
+def paper_report(
+    out_md: str = "reports/paper_trading.md",
+    config: str = "config.yaml",
+) -> None:
+    """Summarise the forward test: does the backtested edge survive depth?"""
+    from marketlens.live.paper import ensure_schema, settle
+    from marketlens.live.report import render
+
+    cfg, conn = _connect(config)
+    ensure_schema(conn)
+    n = settle(conn)
+    report = render(conn)
+    (cfg.root / out_md).write_text(report)
+    conn.close()
+    typer.echo(f"settled {n} signals; wrote {out_md}")
+
+
+@app.command()
 def quality_report(
     out: str = "reports/data_quality.md",
     config: str = "config.yaml",

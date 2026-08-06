@@ -62,6 +62,17 @@ tens of dollars, not thousands, and Polymarket has no historical order book to
 verify depth against. This is a market-microstructure finding, not a trading
 strategy.
 
+**6. Measured execution finally settles it.** The backtest could not see
+order book depth, so it assumed a 1-point slippage haircut and swept 0 to 3.
+Live capture of 120 real books shows Polymarket costs **3.0 points at $50,
+7.3 at $200 and 14.7 at $1,000** (Kalshi, whose books are deep, costs 0.02 to
+0.66). Re-running the backtest at measured rather than assumed slippage cuts
+opportunities from 43% of pairs to **22% at a $200 trade and 12% at $1,000** —
+and the original sensitivity sweep never even reached those levels. Combined
+with the edge being 6x larger in the thinnest volume quartile, the apparent
+arbitrage is an artifact of quoting, not a tradable opportunity.
+[reports/paper_trading.md](reports/paper_trading.md).
+
 Full write-up with all numbers: [reports/results.md](reports/results.md).
 
 ## Architecture
@@ -90,10 +101,15 @@ Full write-up with all numbers: [reports/results.md](reports/results.md).
         +------------------+------------------+---------------+
                            |
                   reports/ (tables, figures, CSVs)
+
+   live/  (read-only forward test, no orders, no credentials)
+     books.py    walks real order books for a target size
+     capture.py  snapshots depth from both venues
+     paper.py    logs what the strategy would do, and settles it later
 ```
 
 Every statistic is a small pure function with a hand-computed unit test.
-**141 tests, all passing.**
+**170 tests, all passing.**
 
 ## Key engineering problems
 

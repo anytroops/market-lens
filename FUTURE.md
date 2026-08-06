@@ -27,10 +27,13 @@ about a day) unresolvable at finer scale. Both APIs expose hourly or
 minute fidelity; the cost is roughly 24x the storage and request volume
 for the matched pairs.
 
-**Execution depth.** The backtest's central caveat is that Polymarket
-publishes no historical order book, so an apparent 3 cent edge may be
-good for $50. Live order book snapshots collected going forward would
-let a future version size trades instead of assuming a fill.
+**Execution depth: now partly done.** `marketlens paper-trade` captures
+live depth on both venues and the first sweep already answered the
+headline question (measured Polymarket slippage is 7.3 points at $200
+against the backtest's assumed 1.0). What remains is running it on a
+schedule so the measurement becomes a distribution rather than a
+snapshot, and accumulating paper-trade signals, which need an open
+matched pair on both venues at once and are therefore seasonal.
 
 ## Methodological upgrades
 

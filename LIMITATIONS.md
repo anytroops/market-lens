@@ -104,9 +104,19 @@ is, why it exists, and what it affects.
   returns one price series only. The backtest applies a configurable slippage
   haircut on the Polymarket leg instead of real spreads. Kalshi candlesticks
   do include historical yes_bid/yes_ask, so that leg is execution-realistic.
-- **Displayed prices are not depth.** A price good for $50 is not good for
-  $5,000. The backtest will carry a minimum-size caveat rather than model
-  book depth, which is not available historically.
+- **Displayed prices are not depth. Now measured, not assumed.** Live
+  order book capture (`marketlens paper-trade`) records real depth. On
+  120 books the average cost of crossing the Polymarket spread was 3.0
+  points at $50, 7.3 at $200 and 14.7 at $1,000, against the backtest's
+  assumed 1.0. Kalshi is far deeper at 0.02 to 0.66 points. The
+  historical backtest therefore overstates the opportunity set, and its
+  0 to 3 point sensitivity sweep did not extend far enough to cover
+  realistic execution.
+- **The live measurement is a snapshot, not a distribution.** 120 books
+  captured in one sweep on one day is enough to show the order of
+  magnitude but not to characterise how depth varies by category, time
+  of day, or proximity to resolution. Running the capture on a schedule
+  is what turns it into a proper dataset.
 
 ## Field semantics
 
