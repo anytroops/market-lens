@@ -347,3 +347,121 @@ the true standard errors are wider than reported and the t statistics are
 optimistic. This does not change the conclusion (a t of 0.08 is not
 rescued by wider error bars) but it does mean the earlier t of 5.30 was
 even less credible than it looked.
+
+## Phase 7: Measured execution, and what it does to the arbitrage result
+
+Every previous phase carried the same unverifiable assumption. Polymarket
+publishes no historical order book, so the backtest applied a flat
+slippage haircut to that leg and swept it from 0 to 3 probability points,
+while noting in LIMITATIONS.md that a displayed price good for $50 is not
+good for $5,000. Live capture replaces the assumption with a measurement.
+
+`marketlens paper-trade` snapshots real depth on both venues and walks
+each ladder for a target trade size, recording the volume-weighted price
+actually achievable. It is read-only: no orders are placed and the
+package holds no credentials.
+
+### The measurement
+
+Across 120 books captured from open markets:
+
+| Platform | Avg cost above the touch at $50 | at $200 | at $1,000 |
+|---|---|---|---|
+| Polymarket | 3.01 points | **7.26 points** | 14.71 points |
+| Kalshi | 0.02 points | 0.08 points | 0.66 points |
+
+Kalshi's books are deep and tight. Polymarket's are not, which is
+consistent with every other liquidity finding in this study. The number
+that matters is the comparison: **the backtest assumed 1.0 point, and a
+$200 Polymarket order really costs about 7.3.** The sensitivity sweep
+stopped at 3 points, so it never reached the realistic range.
+
+### Re-running the backtest at measured rather than assumed slippage
+
+| Slippage | Source | Opportunities | Share of tradable pairs |
+|---|---|---|---|
+| 1.00 pt | original default | 906 | 42.9% |
+| 3.01 pts | measured at $50 | 697 | 33.0% |
+| 7.26 pts | measured at $200 | 474 | 22.4% |
+| 14.71 pts | measured at $1,000 | 260 | 12.3% |
+
+The opportunity set roughly halves at a $200 trade and falls by more than
+two thirds at $1,000. Put beside the capacity result from the backtest
+itself, where the median edge is 7.5 cents in the thinnest volume
+quartile against 1.3 cents in the deepest, the two measurements agree:
+the apparent edge sits precisely where the book cannot absorb a trade.
+
+### The honest conclusion
+
+The economic question this project set out to answer was whether
+cross-platform disagreements were exploitable after costs. The answer is
+no, and it is now supported by measurement rather than by a caveat. The
+edge that survives fees does not survive execution, because it is
+concentrated in exactly the markets whose displayed prices are least
+representative of what you could actually trade.
+
+That is a market-efficiency finding, and it is the result the spec
+predicted would be the honest one.
+
+### What paper trading adds, and why it has no signals yet
+
+The harness also evaluates the Phase 5 entry rule against live books and
+logs what it would have done, so that realised outcomes can later be
+compared against predictions out of sample. It has recorded no signals
+yet, and the reason is itself a finding: **the matched-pair opportunity
+set is strongly seasonal.** A single World Cup produced 455 of the
+study's 2,552 verified pairs. On a quiet day the two venues' near-dated
+books share no propositions at all: Polymarket lists UFC fights and Dota
+2 matches while Kalshi lists tennis sets and esports maps, and the best
+fuzzy score between them is around 50, far below the acceptance
+threshold. Signals will accumulate when the calendars overlap again.
+
+This matters for interpreting Phase 4 and 5. Those results rest on a
+window dominated by one tournament, so they describe cross-platform
+behaviour during a period of unusually high overlap rather than a steady
+state.
+
+
+## Phase 8: Are the intervals honest? Correcting for dependence
+
+Every confidence interval up to this point assumed markets were
+independent observations. They are not. A "who wins the nomination"
+event lists one binary leg per candidate and exactly one resolves YES,
+so legs inside an event are mechanically correlated, and treating them
+as independent makes intervals too narrow. This has been flagged in
+LIMITATIONS.md since Phase 1; here it is measured.
+
+The method is a cluster bootstrap: resample whole EVENTS with
+replacement rather than individual markets, recompute the statistic, and
+read the spread. It assumes nothing about the correlation structure
+inside an event, which matters because a two-horse race and a
+twenty-candidate field are differently dependent.
+
+### How much dependence is there?
+
+| Platform | Markets | Events | Legs per event | Design effect | Effective n |
+|---|---|---|---|---|---|
+| Polymarket | 14,658 | 11,022 | 1.3 | 1.24x | 9,500 |
+| Kalshi | 10,661 | 6,119 | 1.7 | 1.41x | 5,378 |
+
+So honest intervals are 24 to 41 percent wider than the ones reported in
+Phase 3, and Kalshi's effective sample size is about half its raw market
+count. That is a real correction, and it is the kind of thing that is
+easy to leave unstated.
+
+### Does anything change?
+
+No conclusion is overturned.
+
+- Kalshi longshot overpricing, the study's one significant bias, stays
+  significant: implied 3.06 percent against a clustered interval of
+  [1.82, 2.70] percent, which still excludes the implied price.
+- Every result that was not significant, including both Polymarket tails
+  and Kalshi favorites, remains not significant with wider intervals.
+- The Phase 6 null result is if anything reinforced, since a t statistic
+  of -0.48 does not become interesting when the error bars grow.
+
+The honest summary is that the dependence correction matters for how
+precisely the numbers should be quoted, not for what the study concludes.
+Regenerate with `marketlens robustness`; full table in
+`reports/robustness.md`.

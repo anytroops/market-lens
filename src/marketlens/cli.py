@@ -381,6 +381,8 @@ def run_all(
             out_csv="reports/backtest_trades.csv", config=config)),
         ("predict", lambda: predict(
             out_md="reports/prediction_tables.md", config=config)),
+        ("robustness", lambda: robustness(
+            out_md="reports/robustness.md", config=config)),
     ]
     for name, fn in steps:
         typer.echo(f"\n=== {name} ===")
@@ -388,6 +390,21 @@ def run_all(
         fn()
         typer.echo(f"=== {name} done in {time.monotonic() - t0:.0f}s ===")
     typer.echo("\nAll steps complete. See reports/.")
+
+
+@app.command()
+def robustness(
+    out_md: str = "reports/robustness.md",
+    config: str = "config.yaml",
+) -> None:
+    """Recheck the headline findings with event-clustered intervals."""
+    from marketlens.analysis.robustness import render
+
+    cfg, conn = _connect(config)
+    report = render(conn)
+    conn.close()
+    (cfg.root / out_md).write_text(report)
+    typer.echo(f"wrote {out_md}")
 
 
 @app.command()

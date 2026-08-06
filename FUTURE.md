@@ -37,13 +37,13 @@ matched pair on both venues at once and are therefore seasonal.
 
 ## Methodological upgrades
 
-**Clustered standard errors.** Multi-outcome events contribute
-mechanically correlated legs (exactly one candidate wins), so the Wilson
-intervals and paired t statistics reported here are narrower than they
-should be. Clustering by event id would widen them honestly. This does
-not threaten any conclusion in the current results (the null findings
-get more null, and the calibration effects are large relative to their
-intervals) but it is the correct treatment.
+**Clustered standard errors: done.** Implemented as an event-level
+cluster bootstrap (`analysis/clustering.py`, `marketlens robustness`).
+Measured design effects are 1.24x on Polymarket and 1.41x on Kalshi. No
+conclusion changed. What remains optional is propagating the clustered
+intervals into the Phase 3 tables themselves rather than reporting them
+separately, and extending the same treatment to the divergence and
+backtest statistics, where pair-days within a pair are also dependent.
 
 **Semantic matching.** Fuzzy text matching plus deterministic guards
 reached roughly 90% precision before human verification. A small local

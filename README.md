@@ -109,7 +109,7 @@ Full write-up with all numbers: [reports/results.md](reports/results.md).
 ```
 
 Every statistic is a small pure function with a hand-computed unit test.
-**170 tests, all passing.**
+**179 tests, all passing.**
 
 ## Key engineering problems
 

@@ -89,12 +89,18 @@ is, why it exists, and what it affects.
 
 ## Statistical dependence
 
-- **Multi-outcome events create dependent rows.** A "who wins the
-  nomination" event with 8 candidates contributes 8 binary legs whose
-  outcomes are mechanically correlated (exactly one resolves YES). Error
-  bars that treat legs as i.i.d. are too narrow. Event ids (Polymarket) and
-  event tickers (Kalshi) are retained in raw_json so Phase 3 can cluster or
-  deduplicate.
+- **Multi-outcome events create dependent rows, now quantified.** A
+  "who wins the nomination" event contributes one binary leg per
+  candidate and exactly one resolves YES, so legs are mechanically
+  correlated and naive error bars are too narrow. Measured with an
+  event-level cluster bootstrap (`marketlens robustness`): the design
+  effect is 1.24x on Polymarket and 1.41x on Kalshi, so honest intervals
+  are 24 to 41 percent wider and Kalshi's effective sample size is about
+  half its raw market count. No conclusion changes. The one significant
+  bias (Kalshi longshot overpricing) survives clustering, and every
+  non-significant result stays non-significant. Intervals quoted in
+  Phase 3 tables remain the naive ones; `reports/robustness.md` carries
+  the corrected versions.
 - **Sports and politics markets cluster in time and topic** (same game, same
   election), a second source of dependence beyond shared events.
 
